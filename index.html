@@ -2349,7 +2349,13 @@
                 closeModal('eliminarModal');
                 await cargarInventario();
             } catch (err) {
-                alert('No se pudo eliminar: ' + err.message);
+                // Si fue un error de red/tiempo de espera (no una clave incorrecta),
+                // es posible que igual se haya eliminado del lado de Google — se
+                // refresca la lista para reflejar el estado real en vez de dejar
+                // datos viejos en pantalla.
+                closeModal('eliminarModal');
+                await cargarInventario();
+                alert('Hubo un problema de conexión al eliminar: ' + err.message + '\n\nSe actualizó la lista — revisá si la moto ya no aparece (puede que sí se haya eliminado a pesar del aviso).');
             } finally {
                 boton.textContent = textoOriginal;
                 boton.disabled = false;
