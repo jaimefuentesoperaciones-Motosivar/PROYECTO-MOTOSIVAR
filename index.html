@@ -47,6 +47,7 @@
         /* SIDEBAR */
         .sidebar {
             width: 280px;
+            flex-shrink: 0;
             background: linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 100%);
             color: white;
             padding: 20px;
@@ -527,8 +528,8 @@
         /* Tablas de motos un poco más compactas para que quepan en una laptop */
         .tabla-motos th,
         .tabla-motos td {
-            padding-left: 8px;
-            padding-right: 8px;
+            padding-left: 6px;
+            padding-right: 6px;
         }
 
         .tabla-motos td {
@@ -548,9 +549,6 @@
         }
 
         .fecha-ingreso {
-            font-size: 12px;
-            color: var(--ink-muted);
-            margin-top: 3px;
             white-space: nowrap;
         }
 
@@ -717,9 +715,15 @@
             text-align: center;
         }
 
+        /* Las tablas anchas se desplazan DENTRO de su tarjeta en vez de
+           ensanchar toda la columna (en celular se cortaban los gráficos). */
+        .dashboard-grid > * {
+            min-width: 0;
+        }
+
         @media (max-width: 900px) {
             .dashboard-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
         }
 
@@ -988,6 +992,213 @@
             }
         }
 
+        /* Laptops: menú lateral un poco más angosto para dar espacio a las tablas */
+        @media (min-width: 769px) and (max-width: 1440px) {
+            .sidebar {
+                width: 236px;
+                padding: 20px 16px;
+            }
+        }
+
+        /* ===== Inicio estilo Power BI: segmentadores y elementos que filtran ===== */
+        .segmentadores {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .seg-fila {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .seg-titulo {
+            min-width: 76px;
+            padding-top: 7px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--navy-700);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .seg-chips {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--navy-100);
+            background: white;
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 12.5px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .chip:hover {
+            border-color: var(--navy-500);
+        }
+
+        .chip.activo {
+            background: var(--navy-800);
+            border-color: var(--navy-800);
+            color: white;
+        }
+
+        .chip.vacio {
+            opacity: 0.55;
+        }
+
+        .chip-n {
+            font-size: 11px;
+            color: var(--ink-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .chip.activo .chip-n {
+            color: var(--navy-200);
+        }
+
+        .seg-pie {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-top: 10px;
+            border-top: 1px solid var(--navy-50);
+        }
+
+        .seg-pie .inicio-alcance {
+            padding-bottom: 0;
+        }
+
+        .stat-card.stat-facturadas {
+            border-left-color: #1565c0;
+        }
+
+        .stat-card.stat-facturadas .stat-value {
+            color: #1565c0;
+        }
+
+        .columna-visuales {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .columna-visuales .card {
+            margin-bottom: 0;
+        }
+
+        .tabla-desglose tbody tr.seleccionada td {
+            background: var(--navy-50);
+        }
+
+        .tabla-desglose tbody tr.seleccionada td:first-child {
+            box-shadow: inset 3px 0 0 var(--navy-800);
+        }
+
+        .donut-legend li.clickable {
+            cursor: pointer;
+        }
+
+        .donut-legend li.seleccionada .lbl {
+            font-weight: 700;
+        }
+
+        .donut-legend li.atenuada {
+            opacity: 0.45;
+        }
+
+        .barras-suc {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .barra-suc {
+            padding: 8px 10px;
+            margin: 0 -10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, opacity 0.15s;
+        }
+
+        .barra-suc:hover {
+            background: var(--navy-50);
+        }
+
+        .barra-suc.seleccionada {
+            background: var(--navy-50);
+            box-shadow: inset 3px 0 0 var(--navy-800);
+        }
+
+        .barra-suc.atenuada {
+            opacity: 0.4;
+        }
+
+        .barra-suc-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .barra-suc-nombre {
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .barra-suc-valor {
+            font-weight: 700;
+            color: var(--navy-900);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .barra-suc-pista {
+            height: 8px;
+            margin-top: 6px;
+            border-radius: 4px;
+            background: var(--navy-50);
+            overflow: hidden;
+        }
+
+        .barra-suc-relleno {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--navy-700);
+        }
+
+        .barra-suc-sub {
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--ink-muted);
+        }
+
+        @media (max-width: 768px) {
+            .seg-fila {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .seg-titulo {
+                padding-top: 0;
+            }
+        }
+
         /* ===== Barra de carga, bloqueo al guardar y avisos en pantalla ===== */
         #barra-carga {
             position: fixed;
@@ -1155,6 +1366,11 @@
             color: #b71c1c;
         }
 
+        .badge-anulado {
+            background: var(--navy-50);
+            color: var(--ink-muted);
+        }
+
         .menu-insignia {
             display: inline-block;
             min-width: 20px;
@@ -1283,16 +1499,20 @@
 
                 <!-- INICIO -->
                 <section id="inicio" class="section active">
-                    <div class="card" style="margin-bottom: 20px;">
-                        <div class="inicio-filtros">
-                            <div class="form-group" style="margin-bottom: 0; min-width: 220px;">
-                                <label for="inicio-filtro-marca">Filtrar por marca</label>
-                                <select id="inicio-filtro-marca" onchange="actualizarDashboard()">
-                                    <option value="">Todas las marcas</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-secondary" id="inicio-volver-marcas" style="display:none;" onclick="seleccionarMarcaInicio('')">← Todas las marcas</button>
+                    <!-- Segmentadores estilo Power BI: se pueden elegir varias opciones;
+                         tocar otra vez una opción elegida la quita. -->
+                    <div class="card segmentadores" id="inicio-segmentadores" style="margin-bottom: 20px;">
+                        <div class="seg-fila">
+                            <div class="seg-titulo">Sucursal</div>
+                            <div class="seg-chips" id="seg-sucursales"></div>
+                        </div>
+                        <div class="seg-fila">
+                            <div class="seg-titulo">Marca</div>
+                            <div class="seg-chips" id="seg-marcas"></div>
+                        </div>
+                        <div class="seg-pie">
                             <div class="inicio-alcance" id="inicio-alcance">Mostrando <strong>todo el inventario</strong></div>
+                            <button class="btn btn-secondary" id="inicio-borrar-filtros" type="button" style="display:none;" onclick="borrarFiltrosInicio()">✕ Borrar filtros</button>
                         </div>
                     </div>
 
@@ -1311,6 +1531,11 @@
                             <div class="stat-value" id="stat-prospectadas">0</div>
                             <div class="stat-label">Prospectadas</div>
                             <div class="stat-sub">Con cliente interesado</div>
+                        </div>
+                        <div class="stat-card stat-facturadas">
+                            <div class="stat-value" id="stat-facturadas">0</div>
+                            <div class="stat-label">Facturadas</div>
+                            <div class="stat-sub" id="stat-facturadas-sub">Inventario propio</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="stat-vendidas">0</div>
@@ -1332,21 +1557,28 @@
                     <div class="dashboard-grid">
                         <div class="card">
                             <h2 id="desglose-titulo">Motos por marca</h2>
-                            <p class="card-ayuda" id="desglose-ayuda">Tocá una marca para ver sus modelos.</p>
+                            <p class="card-ayuda" id="desglose-ayuda">Tocá una marca para filtrar todo el tablero.</p>
                             <div class="table-wrapper">
                                 <table class="tabla-desglose">
                                     <thead id="desglose-head"></thead>
                                     <tbody id="desglose-body">
-                                        <tr><td colspan="5" style="text-align:center; color: var(--ink-muted); padding: 24px;">Cargando...</td></tr>
+                                        <tr><td colspan="6" style="text-align:center; color: var(--ink-muted); padding: 24px;">Cargando...</td></tr>
                                     </tbody>
                                     <tfoot id="desglose-foot"></tfoot>
                                 </table>
                             </div>
                         </div>
-                        <div class="card">
-                            <h2 id="pastel-titulo">Participación por marca</h2>
-                            <p class="card-ayuda" id="pastel-ayuda">Sobre el total en inventario (sin vendidas)</p>
-                            <div class="donut-wrap" id="pastel-contenedor"></div>
+                        <div class="columna-visuales">
+                            <div class="card">
+                                <h2 id="pastel-titulo">Participación por marca</h2>
+                                <p class="card-ayuda" id="pastel-ayuda">Sobre el total en inventario (sin vendidas)</p>
+                                <div class="donut-wrap" id="pastel-contenedor"></div>
+                            </div>
+                            <div class="card">
+                                <h2>Por sucursal</h2>
+                                <p class="card-ayuda" id="barras-ayuda">Motos en inventario. Tocá una sucursal para filtrar.</p>
+                                <div class="barras-suc" id="barras-sucursal"></div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -1429,9 +1661,11 @@
                             <table class="tabla-motos">
                                 <thead>
                                     <tr>
-                                        <th>ID / Ingreso</th>
+                                        <th>ID</th>
+                                        <th>Fecha Ingreso</th>
                                         <th>Marca</th>
                                         <th>Modelo</th>
+                                        <th>Año</th>
                                         <th>Color</th>
                                         <th>Chasis</th>
                                         <th>Precio Venta</th>
@@ -1462,9 +1696,11 @@
                                 <table class="tabla-motos">
                                     <thead>
                                         <tr>
-                                            <th>ID / Ingreso</th>
+                                            <th>ID</th>
+                                            <th>Fecha Ingreso</th>
                                             <th>Marca</th>
                                             <th>Modelo</th>
+                                            <th>Año</th>
                                             <th>Color</th>
                                             <th>Chasis</th>
                                             <th>Precio Venta</th>
@@ -1510,7 +1746,7 @@
 
                     <div class="card">
                         <h3 style="margin-bottom: 4px; color: var(--navy-900);">Historial reciente</h3>
-                        <p class="card-ayuda">Últimos traslados completados o rechazados, con quién aprobó cada parte.</p>
+                        <p class="card-ayuda">Últimos traslados completados, rechazados o anulados por repetidos, con quién aprobó cada parte.</p>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -1921,7 +2157,6 @@
             { nombre: 'Santa Ana', ubicacion: 'Santa Ana', encargado: 'Nicole Martinez', capacidad: 50 }
         ];
         const NOMBRES_SUCURSALES = SUCURSALES.map(x => x.nombre);
-        const CAPACIDAD_TOTAL = SUCURSALES.reduce((total, x) => total + x.capacidad, 0);
 
         // Sucursales que ya no operan (ej. La Mascota) pero a las que todavía
         // les quedan motos en inventario. Se muestran como "cerrada" para poder
@@ -2406,9 +2641,11 @@
         }
 
         // ===================================================================
-        // INICIO (DASHBOARD) — de lo macro (todas las marcas) a lo micro
-        // (modelos de una marca). El filtro de marca afecta TODO: tarjetas,
-        // tabla, gráfico y solicitudes pendientes.
+        // INICIO (DASHBOARD) — al estilo Power BI. Dos segmentadores
+        // (Sucursal y Marca) con selección múltiple: tocar una opción la
+        // agrega, tocarla otra vez la quita. El gráfico de marcas, las barras
+        // por sucursal y la tabla también filtran al tocarlos. Todo el
+        // tablero (tarjetas, tabla, gráficos) responde a los filtros.
         // ===================================================================
 
         // Colores del gráfico (orden validado para daltonismo). Con más de 6
@@ -2416,9 +2653,30 @@
         const COLORES_GRAFICO = ['#2a78d6', '#1baf7a', '#4a3aa7', '#eda100', '#e87ba4', '#008300'];
         const COLOR_OTROS = '#5d5c57';
 
-        function seleccionarMarcaInicio(marca) {
-            document.getElementById('inicio-filtro-marca').value = marca;
+        // Filtros activos del Inicio (vacío = todas)
+        const filtrosInicio = { sucursales: new Set(), marcas: new Set() };
+
+        function alternarFiltroInicio(tipo, valor) {
+            const conjunto = filtrosInicio[tipo];
+            if (conjunto.has(valor)) conjunto.delete(valor);
+            else conjunto.add(valor);
             actualizarDashboard();
+        }
+
+        function borrarFiltrosInicio() {
+            filtrosInicio.sucursales.clear();
+            filtrosInicio.marcas.clear();
+            actualizarDashboard();
+        }
+
+        function pasaSucursal(m) {
+            return filtrosInicio.sucursales.size === 0 || filtrosInicio.sucursales.has(m.sucursal);
+        }
+        function pasaMarca(m) {
+            return filtrosInicio.marcas.size === 0 || filtrosInicio.marcas.has(textoClave(m.marca));
+        }
+        function esFacturada(m) {
+            return textoClave(m.estadoVenta).startsWith('FACTUR');
         }
 
         // Agrupa motos (ya en inventario) por marca o por modelo.
@@ -2426,9 +2684,10 @@
             const grupos = {};
             motos.forEach(m => {
                 const nombre = textoClave(m[campo]) || (campo === 'marca' ? '(SIN MARCA)' : '(SIN MODELO)');
-                if (!grupos[nombre]) grupos[nombre] = { nombre, total: 0, prospectadas: 0 };
+                if (!grupos[nombre]) grupos[nombre] = { nombre, total: 0, prospectadas: 0, facturadas: 0 };
                 grupos[nombre].total++;
                 if (m.disponibilidad === 'Prospectada') grupos[nombre].prospectadas++;
+                if (esFacturada(m)) grupos[nombre].facturadas++;
             });
             return Object.values(grupos)
                 .map(g => Object.assign(g, { disponibles: g.total - g.prospectadas }))
@@ -2451,63 +2710,135 @@
             return (p >= 10 || Number.isInteger(p) ? p.toFixed(0) : p.toFixed(1)) + '%';
         }
 
-        function actualizarDashboard() {
-            const select = document.getElementById('inicio-filtro-marca');
-            if (!select) return;
+        // Une una lista en español: "A", "A y B", "A, B y C"
+        function listaTexto(items) {
+            if (items.length <= 1) return items.join('');
+            return items.slice(0, -1).join(', ') + ' y ' + items[items.length - 1];
+        }
 
-            // Opciones del filtro: todas las marcas que existen en el Sheet
-            // (incluye las que solo tienen vendidas, para poder ver sus ventas).
+        // ----- Segmentadores (botones de Sucursal y Marca) -----
+        function renderSegmentadores() {
+            const sucursales = NOMBRES_SUCURSALES.concat(sucursalesCerradasConMotos());
             const marcas = [...new Set(motosDemo.map(m => textoClave(m.marca)).filter(Boolean))].sort();
-            const seleccionPrevia = select.value;
-            select.innerHTML = '<option value="">Todas las marcas</option>' +
-                marcas.map(mc => `<option value="${escaparHTML(mc)}">${escaparHTML(mc)}</option>`).join('');
-            select.value = marcas.includes(seleccionPrevia) ? seleccionPrevia : '';
-            const marca = select.value;
+            // Si una opción elegida ya no existe en los datos, se quita sola.
+            [...filtrosInicio.sucursales].forEach(x => { if (!sucursales.includes(x)) filtrosInicio.sucursales.delete(x); });
+            [...filtrosInicio.marcas].forEach(x => { if (!marcas.includes(x)) filtrosInicio.marcas.delete(x); });
 
-            const base = marca ? motosDemo.filter(m => textoClave(m.marca) === marca) : motosDemo;
-            const stock = base.filter(enInventario);
+            // Cantidades en inventario para mostrar junto a cada opción
+            const enStock = motosDemo.filter(enInventario);
+            const nSuc = {}, nMarca = {};
+            enStock.forEach(m => {
+                if (pasaMarca(m)) nSuc[m.sucursal] = (nSuc[m.sucursal] || 0) + 1;
+                if (pasaSucursal(m)) { const k = textoClave(m.marca); nMarca[k] = (nMarca[k] || 0) + 1; }
+            });
+
+            const chip = (tipo, valor, etiqueta, n) => {
+                const activo = filtrosInicio[tipo].has(valor);
+                return `<button type="button" class="chip${activo ? ' activo' : ''}${!n && !activo ? ' vacio' : ''}" aria-pressed="${activo}"
+                            data-tipo="${tipo}" data-valor="${escaparHTML(valor)}">${escaparHTML(etiqueta)} <span class="chip-n">${n || 0}</span></button>`;
+            };
+            const contSuc = document.getElementById('seg-sucursales');
+            const contMarca = document.getElementById('seg-marcas');
+            contSuc.innerHTML = sucursales.map(x => chip('sucursales', x, NOMBRES_SUCURSALES.includes(x) ? x : x + ' (cerrada)', nSuc[x])).join('');
+            contMarca.innerHTML = marcas.length
+                ? marcas.map(x => chip('marcas', x, x, nMarca[x])).join('')
+                : '<span class="card-ayuda">Todavía no hay motos registradas.</span>';
+            [contSuc, contMarca].forEach(c => {
+                c.onclick = e => {
+                    const b = e.target.closest('.chip');
+                    if (b) alternarFiltroInicio(b.dataset.tipo, b.dataset.valor);
+                };
+            });
+
+            // Resumen de lo que se está viendo + botón para borrar
+            const selSuc = [...filtrosInicio.sucursales];
+            const selMarca = [...filtrosInicio.marcas];
+            const partes = [];
+            if (selSuc.length) partes.push('<strong>' + escaparHTML(listaTexto(selSuc)) + '</strong>');
+            if (selMarca.length) partes.push('marca' + (selMarca.length > 1 ? 's ' : ' ') + '<strong>' + escaparHTML(listaTexto(selMarca)) + '</strong>');
+            document.getElementById('inicio-alcance').innerHTML = partes.length
+                ? 'Mostrando: ' + partes.join(' · ')
+                : 'Mostrando <strong>todo el inventario</strong> · Elegí una o varias opciones para filtrar';
+            document.getElementById('inicio-borrar-filtros').style.display = partes.length ? 'inline-flex' : 'none';
+        }
+
+        function actualizarDashboard() {
+            if (!document.getElementById('inicio-segmentadores')) return;
+            renderSegmentadores();
+
+            const selSuc = filtrosInicio.sucursales;
+            const selMarca = filtrosInicio.marcas;
+            const filtradas = motosDemo.filter(m => pasaSucursal(m) && pasaMarca(m));
+            const stock = filtradas.filter(enInventario);
             const total = stock.length;
             const prospectadas = stock.filter(m => m.disponibilidad === 'Prospectada').length;
-            const disponibles = total - prospectadas;
-            const vendidas = base.filter(m => m.disponibilidad === 'Vendida').length;
-            const pendientes = marca
-                ? trasladosDemo.filter(t => textoClave(t.marca) === marca).length
-                : trasladosDemo.length;
+            const facturadas = stock.filter(esFacturada).length;
+            const consignadas = stock.filter(m => textoClave(m.estadoVenta).startsWith('CONSIG')).length;
+            const vendidas = filtradas.filter(m => m.disponibilidad === 'Vendida').length;
+
+            const trasladosFiltrados = trasladosDemo.filter(t =>
+                (selSuc.size === 0 || selSuc.has(t.deSucursal) || selSuc.has(t.paraSucursal)) &&
+                (selMarca.size === 0 || selMarca.has(textoClave(t.marca))));
 
             document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-disponibles').textContent = disponibles;
+            document.getElementById('stat-disponibles').textContent = total - prospectadas;
             document.getElementById('stat-prospectadas').textContent = prospectadas;
+            document.getElementById('stat-facturadas').textContent = facturadas;
+            document.getElementById('stat-facturadas-sub').textContent = total
+                ? 'Inventario propio · ' + porcentaje(facturadas, total) + ' del total · ' + consignadas + ' en consignación'
+                : 'Inventario propio';
             document.getElementById('stat-vendidas').textContent = vendidas;
-            document.getElementById('stat-pendientes').textContent = pendientes;
-            const mios = (marca ? trasladosDemo.filter(t => textoClave(t.marca) === marca) : trasladosDemo).filter(esperaMiAprobacion).length;
+            document.getElementById('stat-pendientes').textContent = trasladosFiltrados.length;
+            const mios = trasladosFiltrados.filter(esperaMiAprobacion).length;
             document.getElementById('stat-pendientes-sub').textContent = (sesionActual && sesionActual.rol === 'editor')
                 ? (mios ? mios + (mios === 1 ? ' espera' : ' esperan') + ' tu aprobación' : 'Ninguno espera tu aprobación')
                 : 'Esperando aprobación';
 
-            document.getElementById('inicio-alcance').innerHTML = marca
-                ? `Mostrando solo <strong>${escaparHTML(marca)}</strong>`
-                : 'Mostrando <strong>todo el inventario</strong>';
-            document.getElementById('inicio-volver-marcas').style.display = marca ? 'inline-flex' : 'none';
+            // Capacidad: de las sucursales elegidas (o de todas). Es espacio
+            // físico, así que cuenta todas las marcas.
+            const sucCap = SUCURSALES.filter(x => selSuc.size === 0 || selSuc.has(x.nombre));
+            const capacidad = sucCap.reduce((t, x) => t + x.capacidad, 0);
+            const nombresCap = sucCap.map(x => x.nombre);
+            const enUso = motosDemo.filter(m => enInventario(m) && nombresCap.includes(m.sucursal)).length;
+            document.getElementById('stat-capacidad').textContent = capacidad || '—';
+            document.getElementById('stat-capacidad-sub').textContent = capacidad
+                ? 'En uso: ' + enUso + ' (' + Math.round((enUso / capacidad) * 100) + '%) · ' + (sucCap.length === SUCURSALES.length ? SUCURSALES.length + ' sucursales' : listaTexto(nombresCap))
+                : 'Sucursal cerrada: sin capacidad';
 
-            const grupos = agruparInventario(stock, marca ? 'modelo' : 'marca');
-            const colores = coloresPorGrupo(grupos);
-            renderDesglose(grupos, colores, marca, total, prospectadas);
-            renderPastel(grupos, colores, marca, total);
+            // Gráfico de marcas: se filtra por sucursal pero NO por marca (así
+            // muestra todas y resalta las elegidas, como en Power BI).
+            const gruposMarca = agruparInventario(motosDemo.filter(m => enInventario(m) && pasaSucursal(m)), 'marca');
+            const colores = coloresPorGrupo(gruposMarca);
+            renderPastel(gruposMarca, colores);
+
+            // Tabla: con UNA marca elegida baja al detalle por modelo.
+            if (selMarca.size === 1) {
+                const grupos = agruparInventario(stock, 'modelo');
+                renderDesglose(grupos, coloresPorGrupo(grupos), 'modelo', total, prospectadas, facturadas);
+            } else {
+                renderDesglose(agruparInventario(stock, 'marca'), colores, 'marca', total, prospectadas, facturadas);
+            }
+
+            renderBarrasSucursal();
         }
 
-        function renderDesglose(grupos, colores, marca, total, prospectadas) {
-            const etiqueta = marca ? 'Modelo' : 'Marca';
-            document.getElementById('desglose-titulo').textContent = marca ? 'Modelos de ' + marca : 'Motos por marca';
-            document.getElementById('desglose-ayuda').textContent = marca
-                ? 'Unidades en inventario por modelo.'
-                : 'Tocá una marca para ver sus modelos.';
+        function renderDesglose(grupos, colores, nivel, total, prospectadas, facturadas) {
+            const selMarca = [...filtrosInicio.marcas];
+            const porModelo = nivel === 'modelo';
+            document.getElementById('desglose-titulo').textContent = porModelo
+                ? 'Modelos de ' + selMarca[0]
+                : (selMarca.length ? 'Marcas elegidas' : 'Motos por marca');
+            document.getElementById('desglose-ayuda').textContent = porModelo
+                ? 'Unidades en inventario por modelo. Tocá ' + selMarca[0] + ' otra vez (arriba o en el gráfico) para quitar el filtro.'
+                : 'Tocá una marca para filtrar todo el tablero; tocala otra vez para quitarla.';
 
             document.getElementById('desglose-head').innerHTML = `
                 <tr>
-                    <th>${etiqueta}</th>
+                    <th>${porModelo ? 'Modelo' : 'Marca'}</th>
                     <th class="num">Total</th>
                     <th class="num">Prospectadas</th>
                     <th class="num">Disponibles</th>
+                    <th class="num">Facturadas</th>
                     <th class="num">% del total</th>
                 </tr>`;
 
@@ -2515,33 +2846,38 @@
             const tfoot = document.getElementById('desglose-foot');
 
             if (grupos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--ink-muted); padding: 24px;">No hay motos en inventario${marca ? ' de ' + escaparHTML(marca) : ''}.</td></tr>`;
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--ink-muted); padding: 24px;">No hay motos en inventario con estos filtros.</td></tr>';
                 tfoot.innerHTML = '';
                 return;
             }
 
-            tbody.innerHTML = grupos.map(g => `
-                <tr ${marca ? '' : `class="clickable" data-marca="${escaparHTML(g.nombre)}" title="Ver modelos de ${escaparHTML(g.nombre)}"`}>
-                    <td><span class="swatch" style="background:${colores[g.nombre]}"></span>${escaparHTML(g.nombre)}</td>
+            tbody.innerHTML = grupos.map(g => {
+                const elegible = !porModelo;
+                const elegida = elegible && filtrosInicio.marcas.has(g.nombre);
+                return `
+                <tr ${elegible ? `class="clickable${elegida ? ' seleccionada' : ''}" data-marca="${escaparHTML(g.nombre)}" title="${elegida ? 'Quitar' : 'Filtrar por'} ${escaparHTML(g.nombre)}"` : ''}>
+                    <td><span class="swatch" style="background:${colores[g.nombre] || COLOR_OTROS}"></span>${escaparHTML(g.nombre)}</td>
                     <td class="num">${g.total}</td>
                     <td class="num ${g.prospectadas ? 'num-prospectada' : ''}">${g.prospectadas}</td>
                     <td class="num">${g.disponibles}</td>
+                    <td class="num">${g.facturadas}</td>
                     <td class="num">${porcentaje(g.total, total)}</td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
 
             tfoot.innerHTML = `
                 <tr>
-                    <td>Total${marca ? ' ' + escaparHTML(marca) : ''}</td>
+                    <td>Total</td>
                     <td class="num">${total}</td>
                     <td class="num ${prospectadas ? 'num-prospectada' : ''}">${prospectadas}</td>
                     <td class="num">${total - prospectadas}</td>
+                    <td class="num">${facturadas}</td>
                     <td class="num">100%</td>
                 </tr>`;
 
-            // Clic en una marca = entrar a ver sus modelos
             tbody.onclick = function (e) {
                 const fila = e.target.closest('tr[data-marca]');
-                if (fila) seleccionarMarcaInicio(fila.dataset.marca);
+                if (fila) alternarFiltroInicio('marcas', fila.dataset.marca);
             };
         }
 
@@ -2554,11 +2890,16 @@
             return `M${x0} ${y0} A${rExt} ${rExt} 0 ${grande} 1 ${x1} ${y1} L${x2} ${y2} A${rInt} ${rInt} 0 ${grande} 0 ${x3} ${y3} Z`;
         }
 
-        function renderPastel(grupos, colores, marca, total) {
-            document.getElementById('pastel-titulo').textContent = marca ? 'Participación por modelo — ' + marca : 'Participación por marca';
-            document.getElementById('pastel-ayuda').textContent = marca
-                ? 'Sobre el total de ' + marca + ' en inventario (sin vendidas)'
-                : 'Sobre el total en inventario (sin vendidas)';
+        // Dona de participación por marca. Nunca desaparece: las marcas
+        // elegidas quedan resaltadas y el resto atenuado. Tocar una rebanada
+        // (o su nombre en la leyenda) la elige o la quita.
+        function renderPastel(grupos, colores) {
+            const selSuc = [...filtrosInicio.sucursales];
+            const sel = filtrosInicio.marcas;
+            const total = grupos.reduce((t, g) => t + g.total, 0);
+            document.getElementById('pastel-titulo').textContent = 'Participación por marca';
+            document.getElementById('pastel-ayuda').textContent = (selSuc.length ? 'Inventario de ' + listaTexto(selSuc) : 'Todo el inventario') +
+                (sel.size ? ' · tocá una marca elegida para quitarla' : ' · tocá una marca para filtrar');
 
             const cont = document.getElementById('pastel-contenedor');
             if (total === 0) {
@@ -2567,53 +2908,57 @@
             }
 
             // Más de 6 grupos: los 5 mayores + "Otros"
-            let rebanadas = grupos.map(g => ({ nombre: g.nombre, total: g.total, color: colores[g.nombre], esOtros: false }));
+            let rebanadas = grupos.map(g => ({ nombre: g.nombre, marcas: [g.nombre], total: g.total, color: colores[g.nombre], esOtros: false }));
             if (grupos.length > COLORES_GRAFICO.length) {
                 const resto = grupos.slice(5);
                 rebanadas = rebanadas.slice(0, 5).concat([{
                     nombre: 'Otros (' + resto.length + ')',
+                    marcas: resto.map(g => g.nombre),
                     total: resto.reduce((s, g) => s + g.total, 0),
                     color: COLOR_OTROS,
                     esOtros: true,
                     detalle: resto.map(g => g.nombre + ': ' + g.total).join(', ')
                 }]);
             }
+            rebanadas.forEach(r => { r.elegida = sel.size > 0 && r.marcas.some(x => sel.has(x)); });
+            const opacidad = r => (sel.size === 0 || r.elegida) ? '1' : '0.28';
+            const totalElegido = sel.size ? rebanadas.filter(r => r.elegida).reduce((t, r) => t + (r.esOtros ? grupos.filter(g => r.marcas.includes(g.nombre) && sel.has(g.nombre)).reduce((a, g) => a + g.total, 0) : r.total), 0) : total;
 
             const cx = 100, cy = 100, rExt = 92, rInt = 58;
-            let svg = `<svg viewBox="0 0 200 200" role="img" aria-label="${escaparHTML(document.getElementById('pastel-titulo').textContent)}">`;
-
+            let svg = `<svg viewBox="0 0 200 200" role="img" aria-label="Participación por marca">`;
             if (rebanadas.length === 1) {
                 const r = rebanadas[0];
-                svg += `<circle cx="${cx}" cy="${cy}" r="${(rExt + rInt) / 2}" fill="none" stroke="${r.color}" stroke-width="${rExt - rInt}" data-i="0"></circle>`;
+                svg += `<circle cx="${cx}" cy="${cy}" r="${(rExt + rInt) / 2}" fill="none" stroke="${r.color}" stroke-width="${rExt - rInt}" data-i="0" data-op="${opacidad(r)}" style="opacity:${opacidad(r)}; cursor:pointer"></circle>`;
             } else {
                 let angulo = 0;
                 rebanadas.forEach((r, i) => {
                     const fin = angulo + (r.total / total) * Math.PI * 2;
-                    svg += `<path d="${arcoDona(cx, cy, rExt, rInt, angulo, fin)}" fill="${r.color}" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" data-i="${i}" style="cursor:${!marca && !r.esOtros ? 'pointer' : 'default'}"></path>`;
+                    svg += `<path d="${arcoDona(cx, cy, rExt, rInt, angulo, fin)}" fill="${r.color}" stroke="#ffffff" stroke-width="2" stroke-linejoin="round" data-i="${i}" data-op="${opacidad(r)}" style="opacity:${opacidad(r)}; cursor:${r.esOtros ? 'default' : 'pointer'}"></path>`;
                     angulo = fin;
                 });
             }
-
-            svg += `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="30" font-weight="700" fill="#0f2942">${total}</text>`;
-            svg += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="11" fill="#62798e">${total === 1 ? 'moto' : 'motos'}</text>`;
+            svg += `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="30" font-weight="700" fill="#0f2942">${totalElegido}</text>`;
+            svg += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="11" fill="#62798e">${sel.size ? 'de ' + total + ' motos' : (total === 1 ? 'moto' : 'motos')}</text>`;
             svg += '</svg>';
 
-            const leyenda = '<ul class="donut-legend">' + rebanadas.map(r => `
-                <li><span class="swatch" style="background:${r.color}"></span>
+            const leyenda = '<ul class="donut-legend">' + rebanadas.map((r, i) => `
+                <li class="${r.esOtros ? '' : 'clickable'}${r.elegida ? ' seleccionada' : ''}${sel.size && !r.elegida ? ' atenuada' : ''}" data-i="${i}">
+                    <span class="swatch" style="background:${r.color}"></span>
                     <span class="lbl">${escaparHTML(r.nombre)}</span>
                     <span class="val">${r.total} · ${porcentaje(r.total, total)}</span></li>`).join('') + '</ul>';
 
             cont.innerHTML = svg + leyenda + '<div class="donut-tooltip"></div>';
 
-            // Tooltip y resaltado al pasar el mouse / tocar una rebanada
             const tooltip = cont.querySelector('.donut-tooltip');
-            const marcas = cont.querySelectorAll('svg [data-i]');
-            marcas.forEach(el => {
+            const marcasSvg = cont.querySelectorAll('svg [data-i]');
+            const restaurar = () => marcasSvg.forEach(o => { o.style.opacity = o.dataset.op; });
+            marcasSvg.forEach(el => {
                 const r = rebanadas[Number(el.dataset.i)];
                 el.addEventListener('pointerenter', () => {
-                    marcas.forEach(o => { o.style.opacity = o === el ? '1' : '0.45'; });
+                    marcasSvg.forEach(o => { o.style.opacity = o === el ? '1' : String(Math.min(Number(o.dataset.op), 0.45)); });
                     tooltip.innerHTML = `<strong>${escaparHTML(r.nombre)}</strong><br>${r.total} ${r.total === 1 ? 'moto' : 'motos'} · ${porcentaje(r.total, total)}` +
-                        (r.detalle ? `<br><span style="opacity:.8">${escaparHTML(r.detalle)}</span>` : '');
+                        (r.detalle ? `<br><span style="opacity:.8">${escaparHTML(r.detalle)}</span>` : '') +
+                        (r.esOtros ? '' : `<br><span style="opacity:.8">${r.elegida ? 'Tocá para quitar el filtro' : 'Tocá para filtrar'}</span>`);
                     tooltip.style.display = 'block';
                 });
                 el.addEventListener('pointermove', (e) => {
@@ -2625,13 +2970,60 @@
                     tooltip.style.top = y + 'px';
                 });
                 el.addEventListener('pointerleave', () => {
-                    marcas.forEach(o => { o.style.opacity = '1'; });
+                    restaurar();
                     tooltip.style.display = 'none';
                 });
-                if (!marca && !r.esOtros) {
-                    el.addEventListener('click', () => seleccionarMarcaInicio(r.nombre));
-                }
+                if (!r.esOtros) el.addEventListener('click', () => alternarFiltroInicio('marcas', r.nombre));
             });
+            cont.querySelector('.donut-legend').onclick = function (e) {
+                const li = e.target.closest('li.clickable');
+                if (li) alternarFiltroInicio('marcas', rebanadas[Number(li.dataset.i)].nombre);
+            };
+        }
+
+        // Barras por sucursal (se filtran por marca, no por sucursal: muestran
+        // todas y resaltan las elegidas). Tocar una barra la elige o la quita.
+        function renderBarrasSucursal() {
+            const cont = document.getElementById('barras-sucursal');
+            if (!cont) return;
+            const sel = filtrosInicio.sucursales;
+            const lista = SUCURSALES.concat(sucursalesCerradasConMotos().map(nombre => ({ nombre, cerrada: true })));
+            const datos = lista.map(x => {
+                const motos = motosDemo.filter(m => m.sucursal === x.nombre && enInventario(m) && pasaMarca(m));
+                return Object.assign({}, x, {
+                    total: motos.length,
+                    prospectadas: motos.filter(m => m.disponibilidad === 'Prospectada').length,
+                    facturadas: motos.filter(esFacturada).length
+                });
+            });
+            const maximo = Math.max(1, ...datos.map(d => d.total));
+            document.getElementById('barras-ayuda').textContent = filtrosInicio.marcas.size
+                ? 'Motos de ' + listaTexto([...filtrosInicio.marcas]) + ' en inventario. Tocá una sucursal para filtrar.'
+                : 'Motos en inventario. Tocá una sucursal para filtrar; tocala otra vez para quitarla.';
+            cont.innerHTML = datos.map(d => {
+                const elegida = sel.has(d.nombre);
+                const sub = [d.prospectadas + ' prospectadas', d.facturadas + ' facturadas'];
+                if (d.capacidad && filtrosInicio.marcas.size === 0) sub.push(porcentaje(d.total, d.capacidad) + ' de capacidad (' + d.capacidad + ')');
+                if (d.cerrada) sub.push('sucursal cerrada');
+                return `
+                    <div class="barra-suc${elegida ? ' seleccionada' : ''}${sel.size && !elegida ? ' atenuada' : ''}" data-sucursal="${escaparHTML(d.nombre)}" role="button" aria-pressed="${elegida}" title="${elegida ? 'Quitar' : 'Filtrar por'} ${escaparHTML(d.nombre)}">
+                        <div class="barra-suc-top">
+                            <span class="barra-suc-nombre">${escaparHTML(d.nombre)}</span>
+                            <span class="barra-suc-valor">${d.total}</span>
+                        </div>
+                        <div class="barra-suc-pista"><div class="barra-suc-relleno" style="width:${(d.total / maximo) * 100}%"></div></div>
+                        <div class="barra-suc-sub">${sub.join(' · ')}</div>
+                    </div>`;
+            }).join('');
+            cont.onclick = function (e) {
+                const b = e.target.closest('.barra-suc');
+                if (b) alternarFiltroInicio('sucursales', b.dataset.sucursal);
+            };
+        }
+
+        // Texto corto de la condición para la tabla (el completo queda al pasar el mouse)
+        function etiquetaCondicion(condicion) {
+            return condicion === 'Óptimas condiciones' ? 'Óptimas' : (condicion || '');
         }
 
         function claseBadgeCondicion(condicion) {
@@ -2663,7 +3055,7 @@
         function celdaEstadoHTML(m) {
             let html = `<span class="badge ${claseBadgeEstadoVenta(m.estadoVenta)}">${escaparHTML(m.estadoVenta)}</span>`;
             if (m.disponibilidad === 'Prospectada') {
-                html += '<br><span class="badge badge-prospectada">📌 Prospectada</span>';
+                html += '<br><span class="badge badge-prospectada" title="Hay un cliente interesado">Prospectada</span>';
             }
             return html;
         }
@@ -2689,7 +3081,7 @@
                     ? `<span class="aprob-detalle">La gestiona<br>${escaparHTML(m.sucursal)}</span>`
                     : '<span class="aprob-detalle">Sucursal cerrada:<br>solo Administración</span>';
             }
-            const estilo = 'padding: 5px 9px; font-size: 11.5px;';
+            const estilo = 'padding: 5px 7px; font-size: 11.5px;';
             const botonProspecto = m.disponibilidad === 'Prospectada'
                 ? `<button class="btn btn-secondary" style="${estilo}" onclick="quitarProspeccion('${m.chasis}')" title="Quitar prospección (volver a Disponible)">↩ Quitar</button>`
                 : `<button class="btn btn-secondary" style="${estilo}" onclick="prospectarMoto('${m.chasis}')" title="Hay un cliente interesado">📌 Prospectar</button>`;
@@ -2708,13 +3100,15 @@
         function filaMotoHTML(m, conSucursal) {
             return `
                 <tr class="${m.disponibilidad === 'Prospectada' ? 'fila-prospectada' : ''}">
-                    <td><span class="id-moto">${escaparHTML(m.id)}</span><div class="fecha-ingreso">${escaparHTML(formatearFechaCorta(m.fecha))}</div></td>
+                    <td><span class="id-moto">${escaparHTML(m.id)}</span></td>
+                    <td><span class="fecha-ingreso">${escaparHTML(formatearFechaCorta(m.fecha))}</span></td>
                     <td>${escaparHTML(m.marca)}</td>
                     <td>${escaparHTML(m.modelo)}</td>
+                    <td>${escaparHTML(m.anio == null || m.anio === '' ? '—' : m.anio)}</td>
                     <td>${escaparHTML(m.color)}</td>
                     <td>${escaparHTML(m.chasis)}${iconosFotosHTML(m)}</td>
                     <td>$${m.precio.toLocaleString()}</td>
-                    <td><span class="badge ${claseBadgeCondicion(m.condicion)}">${escaparHTML(m.condicion)}</span></td>
+                    <td><span class="badge ${claseBadgeCondicion(m.condicion)}" title="${escaparHTML(m.condicion)}">${escaparHTML(etiquetaCondicion(m.condicion))}</span></td>
                     <td>${celdaEstadoHTML(m)}</td>
                     ${conSucursal ? `<td>${escaparHTML(m.sucursal)}</td>` : ''}
                     <td class="solo-escritura">${botonesAccionesHTML(m)}</td>
@@ -2846,7 +3240,7 @@
             }
 
             const mensaje = enStock.length === 0 ? 'Todavía no hay motos en inventario.' : 'No se encontraron motos con esos filtros.';
-            renderPaginado('inventario', 'inventory-table', filtradas, filaInventarioCompletaHTML, 10, mensaje);
+            renderPaginado('inventario', 'inventory-table', filtradas, filaInventarioCompletaHTML, 12, mensaje);
         }
 
         // Cambio de filtro → vuelve a la página 1. Los campos de texto esperan
@@ -3039,16 +3433,26 @@
         }
 
         function filaHistorialTrasladoHTML(t) {
-            const aceptado = t.estado === 'Aceptado';
-            const detalle = aceptado
-                ? `Envío: ${escaparHTML(t.aprobadoOrigenPor || '—')}<br>Recepción: ${escaparHTML(t.aprobadoDestinoPor || '—')}`
-                : `Rechazado por ${escaparHTML(t.resueltoPor || '—')}`;
+            const ESTADOS = {
+                Aceptado: { clase: 'badge-completado', texto: 'Completado' },
+                Rechazado: { clase: 'badge-rechazado', texto: 'Rechazado' },
+                Anulado: { clase: 'badge-anulado', texto: 'Anulado' }
+            };
+            const est = ESTADOS[t.estado] || { clase: 'badge-anulado', texto: t.estado || '—' };
+            let detalle;
+            if (t.estado === 'Aceptado') {
+                detalle = `Envío: ${escaparHTML(t.aprobadoOrigenPor || '—')}<br>Recepción: ${escaparHTML(t.aprobadoDestinoPor || '—')}`;
+            } else if (t.estado === 'Anulado') {
+                detalle = 'Solicitud repetida: ya había otra pendiente para esta moto.';
+            } else {
+                detalle = `Rechazado por ${escaparHTML(t.resueltoPor || '—')}`;
+            }
             return `
                 <tr>
                     <td style="white-space: nowrap;">${escaparHTML(fechaHoraCorta(t.fechaResolucion) || formatearFechaCorta(t.fecha))}</td>
                     <td>${celdaMotoTrasladoHTML(t)}</td>
                     <td>${escaparHTML(t.deSucursal)} → ${escaparHTML(t.paraSucursal)}</td>
-                    <td><span class="badge ${aceptado ? 'badge-completado' : 'badge-rechazado'}">${aceptado ? 'Completado' : 'Rechazado'}</span></td>
+                    <td><span class="badge ${est.clase}">${est.texto}</span></td>
                     <td><div class="aprob-detalle">${detalle}</div></td>
                 </tr>
             `;
@@ -3185,12 +3589,6 @@
                 if (tarjeta) viewSucursal(tarjeta.dataset.sucursal);
             };
 
-            // Tarjeta "Capacidad Máxima" del Inicio: suma de las sucursales activas
-            const enUso = motosDemo.filter(m => enInventario(m) && NOMBRES_SUCURSALES.includes(m.sucursal)).length;
-            const capEl = document.getElementById('stat-capacidad');
-            if (capEl) capEl.textContent = CAPACIDAD_TOTAL;
-            const capSub = document.getElementById('stat-capacidad-sub');
-            if (capSub) capSub.textContent = 'En uso: ' + enUso + ' (' + Math.round((enUso / CAPACIDAD_TOTAL) * 100) + '%) · ' + SUCURSALES.length + ' sucursales';
         }
 
         // ===== Venta de unidades =====
@@ -3912,7 +4310,7 @@
             sucursalActualEnVista = nombreSucursal;
 
             const motos = motosDemo.filter(m => m.sucursal === nombreSucursal && enInventario(m));
-            renderPaginado('sucursal', 'sucursal-detail-table', motos, filaInventarioHTML, 9, 'No hay motos en inventario en esta sucursal.');
+            renderPaginado('sucursal', 'sucursal-detail-table', motos, filaInventarioHTML, 11, 'No hay motos en inventario en esta sucursal.');
         }
 
         function volverASucursales() {
