@@ -552,6 +552,121 @@
             white-space: nowrap;
         }
 
+        .buscador-moto input {
+            width: 100%;
+        }
+
+        .buscador-opciones {
+            margin-top: 6px;
+            max-height: 290px;
+            overflow-y: auto;
+            border: 1px solid var(--navy-100);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(8, 22, 37, 0.12);
+        }
+
+        .opcion-moto {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--navy-100);
+            cursor: pointer;
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+
+        .opcion-moto:last-child {
+            border-bottom: none;
+        }
+
+        .opcion-moto.activa,
+        .opcion-moto:hover {
+            background: #eef4fb;
+        }
+
+        .opcion-moto .detalle {
+            display: block;
+            font-size: 12px;
+            color: #5b6675;
+        }
+
+        .opcion-moto mark {
+            background: #fde68a;
+            color: inherit;
+            padding: 0;
+            border-radius: 2px;
+        }
+
+        .opcion-moto-nota {
+            padding: 9px 12px;
+            font-size: 12.5px;
+            color: #5b6675;
+        }
+
+        .moto-elegida {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--navy-100);
+            border-left: 4px solid var(--navy-700);
+            border-radius: 8px;
+            background: #f6f9fc;
+            font-size: 13.5px;
+            line-height: 1.4;
+        }
+
+        .moto-elegida .detalle {
+            display: block;
+            font-size: 12px;
+            color: #5b6675;
+        }
+
+        .revision-lista {
+            max-height: 46vh;
+            overflow-y: auto;
+            border: 1px solid var(--navy-100);
+            border-radius: 8px;
+        }
+
+        .revision-fila {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--navy-100);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .revision-fila:last-child {
+            border-bottom: none;
+        }
+
+        .revision-fila strong {
+            color: var(--navy-900);
+        }
+
+        .revision-fila ul {
+            margin: 3px 0 0 18px;
+            padding: 0;
+            color: #b42318;
+        }
+
+        .color-sub {
+            display: block;
+            font-size: 11px;
+            color: #777;
+            line-height: 1.25;
+            margin-top: 2px;
+            max-width: 130px;
+            overflow-wrap: anywhere;
+        }
+
+        .color-falta {
+            color: #b45309;
+        }
+
+        .casco-si { color: #1a7f4b; }
+        .casco-no { color: #b42318; font-weight: 600; }
+
         .id-moto {
             font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
             font-size: 12px;
@@ -1638,9 +1753,17 @@
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label>Color</label>
-                                <select id="filtro-color" onchange="filtrarInventario();">
+                                <label>Color primario</label>
+                                <input type="text" id="filtro-color" list="lista-colores-primarios" placeholder="Ej: Rojo" autocomplete="off" oninput="filtrarInventarioConPausa();">
+                                <datalist id="lista-colores-primarios"></datalist>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Casco</label>
+                                <select id="filtro-casco" onchange="filtrarInventario();">
                                     <option value="">Todos</option>
+                                    <option value="Sí">Con casco</option>
+                                    <option value="No">Sin casco</option>
+                                    <option value="vacio">Sin registrar</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
@@ -1721,6 +1844,14 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
                         <p class="card-ayuda" style="max-width: 640px;">Un traslado se completa solo cuando lo aprueban <strong>las dos sucursales</strong>: la que envía y la que recibe. Recién ahí la moto cambia de sucursal.</p>
                         <button class="btn btn-primary" onclick="openTrasladsModal()">+ Solicitar Traslado</button>
+                    </div>
+
+                    <div class="card buscar-traslados-card">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="buscar-traslados">Buscar en traslados</label>
+                            <input type="search" id="buscar-traslados" autocomplete="off" placeholder="Chasis, ID, marca, modelo, sucursal o persona" oninput="filtrarTrasladosConPausa()">
+                        </div>
+                        <div id="buscar-traslados-conteo" class="card-ayuda" style="margin-top: 8px; display: none;"></div>
                     </div>
 
                     <div class="card">
@@ -1856,8 +1987,23 @@
         </div>
     </div>
 
+    <!-- Revisión del Excel antes de importar (errores de nomenclatura y datos) -->
+    <div id="revisionImportModal" class="modal" style="z-index: 3400;">
+        <div class="modal-content" style="max-width: 720px;">
+            <h2 style="font-size: 18px; margin-bottom: 8px; color: var(--navy-900);">Revisión del archivo</h2>
+            <p id="revision-resumen" style="font-size: 14px; line-height: 1.5; color: var(--ink); margin-bottom: 12px;"></p>
+            <div id="revision-lista" class="revision-lista" role="list"></div>
+            <p class="card-ayuda" style="margin: 12px 0 20px;">Corregí esas filas para que coincidan con los nombres del sistema. El archivo de errores trae solo las filas con problema (con la columna "Errores") y una hoja "Catálogo" con las marcas, modelos y colores válidos: corregilo y volvé a importarlo.</p>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn btn-secondary" id="revision-cancelar" type="button">Cancelar</button>
+                <button class="btn btn-secondary" id="revision-descargar" type="button">⬇ Descargar errores</button>
+                <button class="btn btn-primary" id="revision-importar" type="button">📤 Importar válidas</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODALES -->
-    
+
     <!-- Modal: Agregar Moto -->
     <div id="addMotosModal" class="modal">
         <div class="modal-content">
@@ -1956,9 +2102,17 @@
                     <input type="text" id="anio-input" placeholder="Ej: 2026" maxlength="4" required>
                 </div>
                 <div class="form-group">
-                    <label>Color *</label>
-                    <input type="text" id="color-input" placeholder="Ej: Negro" required>
+                    <label>Color de fábrica *</label>
+                    <input type="text" id="color-input" placeholder="Ej: Rojo Perla Metálico" oninput="sugerirColorPrimario()" required>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Color primario *</label>
+                <select id="color-primario-select" onchange="elegirColorPrimarioAMano()" required>
+                    <option value="">Seleccionar color primario</option>
+                </select>
+                <div class="card-ayuda" style="margin-top: 6px;">Es el color estándar que se usa para filtrar. Se sugiere solo según el color de fábrica; podés cambiarlo.</div>
             </div>
 
             <div class="form-row">
@@ -2017,6 +2171,14 @@
                         <option>Daño menor</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>¿Ingresó con casco? *</label>
+                    <select id="casco-select" required>
+                        <option value="">Seleccionar</option>
+                        <option value="Sí">Sí, con casco</option>
+                        <option value="No">No, sin casco</option>
+                    </select>
+                </div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 30px;">
@@ -2049,10 +2211,17 @@
             </div>
 
             <div class="form-group">
-                <label>Moto a Trasladar *</label>
-                <select id="traslado-moto-select" required>
-                    <option value="">Selecciona primero la sucursal de origen</option>
-                </select>
+                <label for="traslado-moto-buscar">Moto a Trasladar *</label>
+                <div id="traslado-moto-elegida" class="moto-elegida" style="display:none;"></div>
+                <div id="traslado-buscador" class="buscador-moto">
+                    <input type="text" id="traslado-moto-buscar" autocomplete="off" spellcheck="false"
+                        placeholder="Escribí ID, chasis, marca, modelo o color"
+                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="traslado-moto-opciones"
+                        oninput="buscarMotoTraslado()" onfocus="buscarMotoTraslado()" onkeydown="teclaBuscadorMoto(event)" onblur="cerrarOpcionesMotoPronto()">
+                    <div id="traslado-moto-opciones" class="buscador-opciones" role="listbox" style="display:none;"></div>
+                </div>
+                <div id="traslado-moto-ayuda" class="card-ayuda" style="margin-top: 6px;"></div>
+                <input type="hidden" id="traslado-moto-select">
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 30px;">
@@ -2286,59 +2455,126 @@
         let secuenciaPedidos = 0;
         let ultimaSecuenciaAplicada = 0;
 
-        async function apiGet(accion) {
+        // Versión de los datos que tiene esta pantalla (la da el servidor,
+        // ej. "a1b2c3d4.57"). Con ella el servidor sabe si puede responder
+        // solo con lo que cambió en vez de mandar todo el inventario.
+        let versionDatos = null;
+
+        // Compara dos versiones: >0 si a es más nueva, <0 si es más vieja,
+        // null si no se pueden comparar (otro origen o falta alguna).
+        function compararVersion(a, b) {
+            if (!a || !b) return null;
+            const pa = String(a).split('.'), pb = String(b).split('.');
+            if (pa.length !== 2 || pb.length !== 2 || pa[0] !== pb[0]) return null;
+            return Number(pa[1]) - Number(pb[1]);
+        }
+
+        function nuevoIdSolicitud() {
+            if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+        }
+
+        const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+        // fetch con tiempo máximo: si el servidor no responde, no queda la
+        // pantalla "Guardando…" para siempre.
+        async function fetchConLimite(url, opciones, ms) {
+            const control = window.AbortController ? new AbortController() : null;
+            const reloj = control ? setTimeout(() => control.abort(), ms) : null;
+            try {
+                return await fetch(url, Object.assign({}, opciones, control ? { signal: control.signal } : {}));
+            } catch (e) {
+                throw new Error(e && e.name === 'AbortError' ? 'el servidor tardó demasiado en responder' : 'sin conexión');
+            } finally {
+                if (reloj) clearTimeout(reloj);
+            }
+        }
+
+        async function apiGet(accion, opciones) {
+            opciones = opciones || {};
             const secuencia = ++secuenciaPedidos;
-            marcarCarga(1);
+            if (!opciones.silencioso) marcarCarga(1);
             try {
                 const token = (sesionActual && sesionActual.token) || '';
-                let resp;
-                try {
-                    resp = await fetch(CONFIG.SCRIPT_URL + '?action=' + encodeURIComponent(accion) + '&token=' + encodeURIComponent(token));
-                } catch (e) {
-                    throw new Error('Sin conexión con el servidor. Revisá tu internet.');
+                // auto=1: actualización automática; no cuenta como "uso" para el vencimiento de la sesión.
+                const url = CONFIG.SCRIPT_URL + '?action=' + encodeURIComponent(accion) + '&token=' + encodeURIComponent(token) + (opciones.auto ? '&auto=1' : '');
+                let json = null;
+                for (let intento = 1; intento <= 2 && !json; intento++) {
+                    try {
+                        const resp = await fetchConLimite(url, {}, 45000);
+                        if (!resp.ok) throw new Error('error ' + resp.status);
+                        json = await resp.json();
+                    } catch (e) {
+                        // Una lectura se puede repetir sin riesgo: un reintento antes de avisar.
+                        if (intento === 2) throw new Error('Sin conexión con el servidor (' + e.message + '). Revisá tu internet.');
+                        await esperar(1200);
+                    }
                 }
-                if (!resp.ok) throw new Error('Error de red (' + resp.status + ')');
-                const json = await resp.json();
                 if (!json.ok) {
                     if (json.codigo === 'SESION') sesionExpirada();
                     throw new Error(json.error || 'Error desconocido del servidor');
                 }
                 return { data: json.data, secuencia };
             } finally {
-                marcarCarga(-1);
+                if (!opciones.silencioso) marcarCarga(-1);
             }
         }
 
         // Se usa text/plain (en vez de application/json) a propósito: evita que el navegador
         // haga un "preflight" OPTIONS antes del POST, que Apps Script no sabe responder.
-        // Cada acción devuelve los datos ya actualizados (snapshot), así no hace
-        // falta pedirlos de nuevo: una sola ida y vuelta al servidor por acción.
+        // Cada acción devuelve los datos ya actualizados: si esta pantalla estaba
+        // al día, solo las filas que cambiaron (rápido); si no, todo.
+        // Si la conexión se corta o el sistema está ocupado, se reintenta UNA vez
+        // con el mismo número de solicitud: el servidor no repite un cambio que
+        // ya hizo (no se duplican motos ni ventas).
         async function apiPost(accion, payload, opciones) {
             opciones = opciones || {};
             const esEscritura = accion !== 'iniciarSesion' && accion !== 'cerrarSesion';
             const cuerpo = Object.assign({ action: accion }, payload);
             // El token de la sesión identifica al usuario ante el servidor.
             if (accion !== 'iniciarSesion' && sesionActual) cuerpo.token = sesionActual.token;
+            if (esEscritura) {
+                cuerpo.idSolicitud = nuevoIdSolicitud();
+                if (versionDatos) cuerpo.version = versionDatos;
+            }
 
             const secuencia = ++secuenciaPedidos;
             if (esEscritura) mostrarBloqueo(opciones.textoBloqueo);
             marcarCarga(1);
             try {
-                let json;
-                try {
-                    const resp = await fetch(CONFIG.SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(cuerpo)
-                    });
-                    if (!resp.ok) throw new Error('error ' + resp.status);
-                    json = await resp.json();
-                } catch (errRed) {
-                    // No sabemos si el cambio alcanzó a guardarse: se recarga para mostrar lo real.
-                    if (esEscritura) setTimeout(cargarDatos, 0);
-                    throw new Error('No se pudo confirmar con el servidor (' + errRed.message + '). Revisá en la lista si el cambio quedó guardado.');
+                let json = null;
+                for (let intento = 1; intento <= 2; intento++) {
+                    try {
+                        const resp = await fetchConLimite(CONFIG.SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify(cuerpo)
+                        }, accion === 'importarMotos' ? 300000 : 90000);
+                        if (!resp.ok) throw new Error('error ' + resp.status);
+                        json = await resp.json();
+                    } catch (errRed) {
+                        if (esEscritura && intento === 1) {
+                            document.getElementById('bloqueo-texto').textContent = 'Reintentando…';
+                            await esperar(1500);
+                            continue;
+                        }
+                        // No sabemos si el cambio alcanzó a guardarse: se recarga para mostrar lo real.
+                        if (esEscritura) setTimeout(cargarDatos, 0);
+                        throw new Error('No se pudo confirmar con el servidor (' + errRed.message + '). Revisá en la lista si el cambio quedó guardado.');
+                    }
+                    // Otro cambio tenía el sistema ocupado: se espera un poco y se reintenta.
+                    if (!json.ok && json.codigo === 'OCUPADO' && esEscritura && intento === 1) {
+                        document.getElementById('bloqueo-texto').textContent = 'El sistema está ocupado, reintentando…';
+                        await esperar(2000);
+                        json = null;
+                        continue;
+                    }
+                    break;
                 }
-                if (json.snapshot && !opciones.noAplicar) aplicarSnapshot(json.snapshot, { secuencia });
+                if (!opciones.noAplicar) {
+                    if (json.cambios) aplicarCambios(json.cambios);
+                    else if (json.snapshot) aplicarSnapshot(json.snapshot, { secuencia });
+                }
                 if (!json.ok) {
                     if (json.codigo === 'SESION') sesionExpirada();
                     throw new Error(json.error || 'Error desconocido del servidor');
@@ -2387,8 +2623,7 @@
             if (!yaConDatos) {
                 // Muestra al instante lo último que se vio en este equipo y
                 // actualiza en segundo plano.
-                const enCache = leerCache();
-                if (enCache) aplicarSnapshot(enCache, { sinGuardar: true, secuencia: 0 });
+                if (!aplicarCache()) versionDatos = null;
                 cargarDatos();
             }
         }
@@ -2418,7 +2653,8 @@
                 sessionStorage.setItem('motoSivarSesion', JSON.stringify(sesionActual));
                 document.getElementById('login-clave-input').value = '';
                 mostrarApp(true);
-                aplicarSnapshot(json.snapshot, { secuencia: json.secuencia });
+                versionDatos = null;
+                aplicarSnapshot(json.snapshot, { secuencia: json.secuencia, forzar: true });
             } catch (err) {
                 errorEl.textContent = err.message || 'Usuario o contraseña incorrectos.';
                 errorEl.style.display = 'block';
@@ -2442,6 +2678,7 @@
             sesionActual = null;
             sessionStorage.removeItem('motoSivarSesion');
             borrarCache(); // en un equipo compartido, no deja datos guardados
+            versionDatos = null;
             motosDemo = [];
             trasladosTodos = [];
             trasladosDemo = [];
@@ -2475,7 +2712,10 @@
                 marca: String(fila.Marca == null ? '' : fila.Marca),
                 modelo: String(fila.Modelo == null ? '' : fila.Modelo),
                 anio: fila.Anio,
-                color: String(fila.Color == null ? '' : fila.Color),
+                // "ColorFabrica" se llamaba "Color" en la versión anterior (datos guardados en caché).
+                color: String(fila.ColorFabrica != null ? fila.ColorFabrica : (fila.Color == null ? '' : fila.Color)),
+                colorPrimario: String(fila.ColorPrimario == null ? '' : fila.ColorPrimario),
+                casco: normalizarCasco(fila.Casco),
                 chasis: String(fila.Chasis == null ? '' : fila.Chasis),
                 motor: fila.Motor,
                 poliza: fila.Poliza,
@@ -2544,14 +2784,55 @@
             opciones = opciones || {};
             if (!snap) return;
             const secuencia = opciones.secuencia || 0;
-            if (secuencia && secuencia < ultimaSecuenciaAplicada) return; // llegó tarde: hay datos más nuevos
-            if (secuencia) ultimaSecuenciaAplicada = secuencia;
+            const comparacion = compararVersion(snap.version, versionDatos);
+            if (!opciones.forzar) {
+                if (comparacion !== null) {
+                    if (comparacion < 0) return; // llegó tarde: esta pantalla ya tiene datos más nuevos
+                } else if (secuencia && secuencia < ultimaSecuenciaAplicada) {
+                    return; // (servidor sin versión) llegó tarde: hay datos más nuevos
+                }
+            }
+            if (secuencia) ultimaSecuenciaAplicada = Math.max(ultimaSecuenciaAplicada, secuencia);
+            versionDatos = snap.version || null;
 
             motosDemo = tablaAObjetos(snap.inventario).map(mapeaFilaAMoto);
             trasladosTodos = tablaAObjetos(snap.traslados).map(mapeaFilaATraslado);
             trasladosDemo = trasladosTodos.filter(t => t.estado === 'Pendiente');
             ultimaCarga = Date.now();
-            if (!opciones.sinGuardar) guardarCache(snap);
+            if (!opciones.sinGuardar) guardarCache();
+            renderTodo();
+        }
+
+        // Aplica una respuesta liviana: solo las filas que cambiaron. Si esta
+        // pantalla no estaba exactamente en la versión de antes del cambio,
+        // pide todo de nuevo (nunca mezcla datos de versiones distintas).
+        function aplicarCambios(c) {
+            if (!c) return;
+            if (!versionDatos || c.base !== versionDatos) {
+                cargarDatos();
+                return;
+            }
+            const eliminadas = new Set((c.eliminadas || []).map(String));
+            if (eliminadas.size) motosDemo = motosDemo.filter(m => !eliminadas.has(String(m.id)));
+            if (c.inventario && c.inventario.filas.length) {
+                const posicion = new Map(motosDemo.map((m, i) => [String(m.id), i]));
+                tablaAObjetos(c.inventario).map(mapeaFilaAMoto).forEach(m => {
+                    const i = posicion.get(String(m.id));
+                    if (i === undefined) { posicion.set(String(m.id), motosDemo.length); motosDemo.push(m); }
+                    else motosDemo[i] = m;
+                });
+            }
+            if (c.traslados && c.traslados.filas.length) {
+                const posicion = new Map(trasladosTodos.map((t, i) => [t.id, i]));
+                tablaAObjetos(c.traslados).map(mapeaFilaATraslado).forEach(t => {
+                    const i = posicion.get(t.id);
+                    if (i === undefined) trasladosTodos.push(t);
+                    else trasladosTodos[i] = t;
+                });
+                trasladosDemo = trasladosTodos.filter(t => t.estado === 'Pendiente');
+            }
+            versionDatos = c.version;
+            guardarCache();
             renderTodo();
         }
 
@@ -2566,30 +2847,59 @@
         }
 
         // Copia local de los últimos datos (para abrir al instante la próxima vez).
-        const CLAVE_CACHE = 'motoSivarDatos_v2';
-        function guardarCache(snap) {
-            try {
-                localStorage.setItem(CLAVE_CACHE, JSON.stringify({ usuario: sesionActual && sesionActual.usuario, snap }));
-            } catch (e) { /* sin espacio o bloqueado: no pasa nada */ }
+        // Copia local de los datos (para abrir al instante la próxima vez).
+        // Se guarda compacta y un momento después de cada cambio, sin frenar la pantalla.
+        const CLAVE_CACHE = 'motoSivarDatos_v3';
+        function aCompacto(objetos) {
+            if (!objetos.length) return { cols: [], filas: [] };
+            const cols = Object.keys(objetos[0]);
+            return { cols, filas: objetos.map(o => cols.map(c => o[c])) };
         }
-        function leerCache() {
+        let relojCache = null;
+        function guardarCache() {
+            clearTimeout(relojCache);
+            relojCache = setTimeout(() => {
+                if (!sesionActual) return;
+                try {
+                    localStorage.setItem(CLAVE_CACHE, JSON.stringify({
+                        usuario: sesionActual.usuario, version: versionDatos,
+                        motos: aCompacto(motosDemo), traslados: aCompacto(trasladosTodos)
+                    }));
+                } catch (e) {
+                    // Sin espacio o bloqueado: se borra la copia para no dejar una vieja.
+                    try { localStorage.removeItem(CLAVE_CACHE); } catch (e2) { /* ignorar */ }
+                }
+            }, 700);
+        }
+        function aplicarCache() {
             try {
                 const c = JSON.parse(localStorage.getItem(CLAVE_CACHE) || 'null');
-                if (c && sesionActual && c.usuario === sesionActual.usuario) return c.snap;
-            } catch (e) { /* ignorar */ }
-            return null;
+                if (!c || !sesionActual || c.usuario !== sesionActual.usuario) return false;
+                motosDemo = tablaAObjetos(c.motos);
+                trasladosTodos = tablaAObjetos(c.traslados);
+                trasladosDemo = trasladosTodos.filter(t => t.estado === 'Pendiente');
+                versionDatos = c.version || null;
+                renderTodo();
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
         function borrarCache() {
-            try { localStorage.removeItem(CLAVE_CACHE); } catch (e) { /* ignorar */ }
+            clearTimeout(relojCache);
+            try {
+                localStorage.removeItem(CLAVE_CACHE);
+                localStorage.removeItem('motoSivarDatos_v2'); // formato anterior
+            } catch (e) { /* ignorar */ }
         }
 
         // Pide inventario + traslados en UNA sola llamada. Si ya hay una carga
         // en curso, reutiliza esa en vez de lanzar otra.
         let cargaEnCurso = null;
-        function cargarDatos() {
+        function cargarDatos(auto) {
             if (!sesionActual) return Promise.resolve();
             if (cargaEnCurso) return cargaEnCurso;
-            cargaEnCurso = apiGet('todo')
+            cargaEnCurso = apiGet('todo', { auto: auto === true })
                 .then(r => aplicarSnapshot(r.data, { secuencia: r.secuencia }))
                 .catch(err => {
                     console.error(err);
@@ -2609,6 +2919,21 @@
                 cargarDatos();
             }
         });
+
+        // Cada minuto (con la pantalla abierta) pregunta al servidor si hubo
+        // cambios de otras personas. Es una consulta mínima; solo si cambió algo
+        // se descargan los datos. Así casi nunca se intenta aprobar o vender
+        // algo que otra sucursal ya cambió.
+        async function revisarCambiosRemotos() {
+            if (!sesionActual || document.visibilityState !== 'visible' || cargaEnCurso || llamadasEnCurso > 0) return;
+            if (!versionDatos) return; // servidor de una versión anterior: no tiene esta consulta
+            try {
+                const r = await apiGet('version', { silencioso: true, auto: true });
+                const v = r.data && r.data.version;
+                if (v && v !== versionDatos && llamadasEnCurso === 0) cargarDatos(true);
+            } catch (e) { /* sin conexión: se intenta el próximo minuto */ }
+        }
+        setInterval(revisarCambiosRemotos, 60000);
 
         // ===================================================================
         // UTILIDADES GENERALES
@@ -3105,10 +3430,10 @@
                     <td>${escaparHTML(m.marca)}</td>
                     <td>${escaparHTML(m.modelo)}</td>
                     <td>${escaparHTML(m.anio == null || m.anio === '' ? '—' : m.anio)}</td>
-                    <td>${escaparHTML(m.color)}</td>
+                    <td>${celdaColorHTML(m)}</td>
                     <td>${escaparHTML(m.chasis)}${iconosFotosHTML(m)}</td>
                     <td>$${m.precio.toLocaleString()}</td>
-                    <td><span class="badge ${claseBadgeCondicion(m.condicion)}" title="${escaparHTML(m.condicion)}">${escaparHTML(etiquetaCondicion(m.condicion))}</span></td>
+                    <td><span class="badge ${claseBadgeCondicion(m.condicion)}" title="${escaparHTML(m.condicion)}">${escaparHTML(etiquetaCondicion(m.condicion))}</span>${etiquetaCascoHTML(m)}</td>
                     <td>${celdaEstadoHTML(m)}</td>
                     ${conSucursal ? `<td>${escaparHTML(m.sucursal)}</td>` : ''}
                     <td class="solo-escritura">${botonesAccionesHTML(m)}</td>
@@ -3191,22 +3516,55 @@
             }
         }
 
-        // Llena el filtro de Color con los colores que existen en el inventario
-        // (sin repetir "Negro" / "negro"), conservando lo que estaba elegido.
-        function actualizarOpcionesColor() {
-            const select = document.getElementById('filtro-color');
-            if (!select) return;
-            const previo = select.value;
-            const colores = [...new Set(motosDemo.filter(enInventario).map(m => textoClave(m.color)).filter(Boolean))].sort();
-            select.innerHTML = '<option value="">Todos</option>' +
-                colores.map(c => `<option value="${escaparHTML(c)}">${escaparHTML(c)}</option>`).join('');
-            select.value = colores.includes(previo) ? previo : '';
+        // Casco: 'Sí' / 'No' / '' (motos viejas sin dato). Acepta variantes
+        // ("si", "con casco", "sin casco"...) por si el Sheet se editó a mano.
+        function normalizarCasco(valor) {
+            const k = claveTexto(valor);
+            if (!k) return '';
+            if (['si', 'yes', 'true', '1', 'concasco', 'trae', 'incluido'].includes(k)) return 'Sí';
+            if (['no', 'false', '0', 'sincasco', 'notrae'].includes(k)) return 'No';
+            return '';
+        }
+
+        // Línea pequeña bajo la condición: 🪖 Con casco / Sin casco / Casco: sin registrar.
+        function etiquetaCascoHTML(m) {
+            if (m.casco === 'Sí') return '<span class="color-sub casco-si" title="La moto ingresó con casco">🪖 Con casco</span>';
+            if (m.casco === 'No') return '<span class="color-sub casco-no" title="La moto ingresó sin casco">Sin casco</span>';
+            return '<span class="color-sub color-falta" title="Se completa al editar la moto">Casco: sin registrar</span>';
+        }
+
+        // Celda de color: el color primario (nomenclatura) y, debajo, el de
+        // fábrica cuando dice algo más (ej. "Rojo" / "Rojo Perla Metálico").
+        function celdaColorHTML(m) {
+            const primario = normalizarColorPrimario(m.colorPrimario) || m.colorPrimario;
+            if (!primario) {
+                return `${escaparHTML(m.color || '—')}<span class="color-sub color-falta">Sin color primario</span>`;
+            }
+            const fabrica = m.color && claveTexto(m.color) !== claveTexto(primario)
+                ? `<span class="color-sub" title="Color de fábrica">${escaparHTML(m.color)}</span>` : '';
+            return escaparHTML(primario) + fabrica;
+        }
+
+        // Filtro de color primario mientras se escribe: "ro" → Rojo y Rosado;
+        // "plata" → Plateado; "sin" → motos que todavía no tienen color primario.
+        // Devuelve null si no hay nada escrito (no filtra).
+        function filtroColorPrimario(texto) {
+            const k = claveTexto(texto);
+            if (!k) return null;
+            const colores = new Set(COLORES_PRIMARIOS.filter(c => claveTexto(c).startsWith(k)));
+            const sinonimo = normalizarColorPrimario(texto);
+            if (sinonimo) colores.add(sinonimo);
+            const incluyeSinAsignar = 'sinasignar'.startsWith(k);
+            return m => {
+                const primario = normalizarColorPrimario(m.colorPrimario);
+                if (!primario) return incluyeSinAsignar || (!!m.colorPrimario && claveTexto(m.colorPrimario).startsWith(k));
+                return colores.has(primario);
+            };
         }
 
         // Muestra el inventario respetando los filtros que estén puestos
         // (así, después de guardar/prospectar/vender, no se pierden los filtros).
         function renderInventarioCompleto() {
-            actualizarOpcionesColor();
             aplicarFiltrosInventario();
         }
 
@@ -3217,8 +3575,9 @@
             const chasis = textoClave(document.getElementById('filtro-chasis').value);
             const estado = document.getElementById('filtro-estado').value;
             const sucursal = document.getElementById('filtro-sucursal').value;
-            const color = document.getElementById('filtro-color').value;
+            const coincideColor = filtroColorPrimario(document.getElementById('filtro-color').value);
             const disponibilidad = document.getElementById('filtro-disponibilidad').value;
+            const casco = document.getElementById('filtro-casco').value;
 
             const enStock = motosDemo.filter(enInventario);
             let filtradas = enStock;
@@ -3228,8 +3587,9 @@
             if (chasis) filtradas = filtradas.filter(m => textoClave(m.chasis).includes(chasis));
             if (estado) filtradas = filtradas.filter(m => m.estadoVenta === estado);
             if (sucursal) filtradas = filtradas.filter(m => m.sucursal === sucursal);
-            if (color) filtradas = filtradas.filter(m => textoClave(m.color) === color);
+            if (coincideColor) filtradas = filtradas.filter(coincideColor);
             if (disponibilidad) filtradas = filtradas.filter(m => m.disponibilidad === disponibilidad);
+            if (casco) filtradas = filtradas.filter(m => casco === 'vacio' ? !m.casco : m.casco === casco);
 
             const prospectadas = filtradas.filter(m => m.disponibilidad === 'Prospectada').length;
             const conteo = document.getElementById('inventario-conteo');
@@ -3263,6 +3623,7 @@
             document.getElementById('filtro-sucursal').value = '';
             document.getElementById('filtro-color').value = '';
             document.getElementById('filtro-disponibilidad').value = '';
+            document.getElementById('filtro-casco').value = '';
             filtrarInventario();
         }
 
@@ -3458,22 +3819,50 @@
             `;
         }
 
+        // Filtro de la sección Traslados: todas las palabras escritas deben
+        // aparecer (en la moto, las sucursales o quién la pidió/aprobó).
+        function coincideTraslado(t, claves) {
+            if (!claves.length) return true;
+            const moto = motosDemo.find(m => textoClave(m.chasis) === textoClave(t.chasis));
+            const texto = [t.chasis, t.marca, t.modelo, t.deSucursal, t.paraSucursal, t.solicitadoPor, t.aprobadoOrigenPor,
+                t.aprobadoDestinoPor, t.resueltoPor, t.estado, moto ? moto.id : '', moto ? moto.colorPrimario : ''].map(claveTexto).join(' ');
+            return claves.every(k => texto.includes(k));
+        }
+
+        let pausaTraslados = null;
+        function filtrarTrasladosConPausa() {
+            clearTimeout(pausaTraslados);
+            pausaTraslados = setTimeout(renderTraslados, 200);
+        }
+
         function renderTraslados() {
             const tbody = document.getElementById('traslados-table');
+            const campo = document.getElementById('buscar-traslados');
+            const claves = (campo ? campo.value : '').split(/\s+/).map(claveTexto).filter(Boolean);
+
             // Primero los que esperan mi aprobación
-            const pendientes = [...trasladosDemo].sort((a, b) => Number(esperaMiAprobacion(b)) - Number(esperaMiAprobacion(a)));
+            const todosPendientes = [...trasladosDemo].sort((a, b) => Number(esperaMiAprobacion(b)) - Number(esperaMiAprobacion(a)));
+            const pendientes = todosPendientes.filter(t => coincideTraslado(t, claves));
             tbody.innerHTML = pendientes.length
                 ? pendientes.map(filaTrasladoHTML).join('')
-                : '<tr><td colspan="6" style="text-align:center; color: var(--ink-muted); padding: 24px;">No hay solicitudes de traslado pendientes.</td></tr>';
+                : `<tr><td colspan="6" style="text-align:center; color: var(--ink-muted); padding: 24px;">${todosPendientes.length ? 'Ninguna solicitud pendiente coincide con la búsqueda.' : 'No hay solicitudes de traslado pendientes.'}</td></tr>`;
 
-            const historial = trasladosTodos
+            const todoHistorial = trasladosTodos
                 .filter(t => t.estado !== 'Pendiente')
                 .sort((a, b) => (b.fechaResolucion || b.fecha).localeCompare(a.fechaResolucion || a.fecha));
+            const historial = todoHistorial.filter(t => coincideTraslado(t, claves));
             const tbodyH = document.getElementById('traslados-historial');
             if (tbodyH) {
                 tbodyH.innerHTML = historial.length
                     ? historial.map(filaHistorialTrasladoHTML).join('')
-                    : '<tr><td colspan="5" style="text-align:center; color: var(--ink-muted); padding: 24px;">Todavía no hay traslados completados ni rechazados.</td></tr>';
+                    : `<tr><td colspan="5" style="text-align:center; color: var(--ink-muted); padding: 24px;">${todoHistorial.length ? 'Ningún traslado del historial coincide con la búsqueda.' : 'Todavía no hay traslados completados ni rechazados.'}</td></tr>`;
+            }
+            const conteo = document.getElementById('buscar-traslados-conteo');
+            if (conteo) {
+                conteo.style.display = claves.length ? 'block' : 'none';
+                conteo.textContent = claves.length
+                    ? `Coinciden ${pendientes.length} de ${todosPendientes.length} pendientes y ${historial.length} de ${todoHistorial.length} del historial.`
+                    : '';
             }
 
             // Número rojo en el menú: cuántos esperan mi aprobación
@@ -3523,29 +3912,177 @@
             }
         }
 
-        // Llena el select "Moto a Trasladar" con las motos disponibles de la sucursal de origen elegida
+        // ===== Buscador de "Moto a Trasladar" =====
+        // En vez de una lista larga fija, se escribe y va mostrando las motos
+        // que coinciden (por ID, chasis, marca, modelo, color o año). Se puede
+        // usar con el teclado: ↑ ↓ para moverse, Enter para elegir, Esc para cerrar.
+        const MAX_OPCIONES_MOTO = 40;
+        let opcionesMotoActuales = [];
+        let opcionMotoActiva = -1;
+
+        // Motos en inventario de la sucursal de origen (disponibles o
+        // prospectadas), sin las que ya tienen un traslado pendiente.
+        function motosParaTraslado() {
+            const sucursal = document.getElementById('traslado-de-select').value;
+            if (!sucursal) return [];
+            const conTrasladoPendiente = new Set(trasladosDemo.map(t => textoClave(t.chasis)));
+            return motosDemo.filter(m => m.sucursal === sucursal && enInventario(m) && !conTrasladoPendiente.has(textoClave(m.chasis)));
+        }
+
+        // Al cambiar la sucursal de origen (o al abrir la ventana): se borra la
+        // moto elegida y se prepara el buscador.
         function updateMotosTraslado() {
             const sucursal = document.getElementById('traslado-de-select').value;
-            const motoSelect = document.getElementById('traslado-moto-select');
-            motoSelect.innerHTML = '';
-
+            const input = document.getElementById('traslado-moto-buscar');
+            const ayuda = document.getElementById('traslado-moto-ayuda');
+            quitarMotoTraslado(false);
+            input.value = '';
+            cerrarOpcionesMoto();
             if (!sucursal) {
-                motoSelect.innerHTML = '<option value="">Selecciona primero la sucursal de origen</option>';
+                input.disabled = true;
+                input.placeholder = 'Elegí primero la sucursal de origen';
+                ayuda.textContent = '';
                 return;
             }
+            const total = motosParaTraslado().length;
+            input.disabled = total === 0;
+            input.placeholder = total ? 'Escribí ID, chasis, marca, modelo o color' : 'No hay motos para trasladar en esa sucursal';
+            ayuda.textContent = total
+                ? total + (total === 1 ? ' moto disponible' : ' motos disponibles') + ' para trasladar desde ' + sucursal + '. Escribí para buscar (ej. "honda rojo" o los últimos dígitos del chasis).'
+                : 'Las motos de ' + sucursal + ' ya tienen un traslado pendiente o no hay ninguna en inventario.';
+        }
 
-            // Motos en inventario de esa sucursal (disponibles o prospectadas),
-            // sin las que ya tienen un traslado pendiente.
-            const conTrasladoPendiente = new Set(trasladosDemo.map(t => textoClave(t.chasis)));
-            const motos = motosDemo.filter(m => m.sucursal === sucursal && enInventario(m) && !conTrasladoPendiente.has(textoClave(m.chasis)));
+        function textoBusquedaMoto(m) {
+            return [m.id, m.chasis, m.marca, m.modelo, m.color, m.colorPrimario, m.anio, m.motor].map(claveTexto).join(' ');
+        }
 
-            if (motos.length === 0) {
-                motoSelect.innerHTML = '<option value="">No hay motos para trasladar en esa sucursal</option>';
-                return;
+        // Marca en amarillo lo que coincide con lo escrito.
+        function resaltar(texto, palabras) {
+            const t = String(texto == null ? '' : texto);
+            const bajo = t.toLowerCase();
+            const marcas = new Array(t.length).fill(false);
+            palabras.forEach(p => {
+                const q = p.toLowerCase();
+                if (q.length < 2) return;
+                let i = bajo.indexOf(q);
+                while (i !== -1) { for (let k = i; k < i + q.length; k++) marcas[k] = true; i = bajo.indexOf(q, i + q.length); }
+            });
+            let html = '', dentro = false;
+            for (let k = 0; k < t.length; k++) {
+                if (marcas[k] && !dentro) { html += '<mark>'; dentro = true; }
+                if (!marcas[k] && dentro) { html += '</mark>'; dentro = false; }
+                html += escaparHTML(t[k]);
+            }
+            return html + (dentro ? '</mark>' : '');
+        }
+
+        function buscarMotoTraslado() {
+            const input = document.getElementById('traslado-moto-buscar');
+            if (input.disabled || document.getElementById('traslado-moto-select').value) return;
+            const texto = input.value.trim();
+            const claves = texto.split(/\s+/).map(claveTexto).filter(Boolean);
+            const palabras = texto.split(/\s+/).filter(Boolean);
+            const todas = motosParaTraslado();
+
+            let lista = todas;
+            if (claves.length) {
+                lista = todas.filter(m => {
+                    const t = textoBusquedaMoto(m);
+                    return claves.every(k => t.includes(k));
+                });
+                // Primero las que coinciden exacto en ID o chasis, después por marca y modelo.
+                const exacta = m => claves.some(k => claveTexto(m.id) === k || claveTexto(m.chasis) === k || claveTexto(m.chasis).endsWith(k)) ? 0 : 1;
+                lista = lista.map(m => ({ m, e: exacta(m) }))
+                    .sort((a, b) => a.e - b.e || (a.m.marca + a.m.modelo).localeCompare(b.m.marca + b.m.modelo) || a.m.id.localeCompare(b.m.id))
+                    .map(x => x.m);
+            } else {
+                lista = todas.slice().sort((a, b) => (a.marca + a.modelo).localeCompare(b.marca + b.modelo) || a.id.localeCompare(b.id));
             }
 
-            motoSelect.innerHTML = '<option value="">Seleccionar moto</option>' +
-                motos.map(m => `<option value="${escaparHTML(m.chasis)}">${escaparHTML(m.id)} · ${escaparHTML(m.marca)} ${escaparHTML(m.modelo)} (${escaparHTML(m.chasis)})${m.disponibilidad === 'Prospectada' ? ' — PROSPECTADA' : ''}</option>`).join('');
+            opcionesMotoActuales = lista.slice(0, MAX_OPCIONES_MOTO);
+            opcionMotoActiva = claves.length && opcionesMotoActuales.length ? 0 : -1;
+            const cont = document.getElementById('traslado-moto-opciones');
+            if (!todas.length) { cerrarOpcionesMoto(); return; }
+            let html = opcionesMotoActuales.map((m, i) => `
+                <div class="opcion-moto${i === opcionMotoActiva ? ' activa' : ''}" role="option" id="opcion-moto-${i}" data-i="${i}" aria-selected="${i === opcionMotoActiva}">
+                    <strong>${resaltar(m.id, palabras)}</strong> · ${resaltar(m.marca + ' ' + m.modelo, palabras)}${m.disponibilidad === 'Prospectada' ? ' <span class="badge badge-prospectada">Prospectada</span>' : ''}
+                    <span class="detalle">Chasis ${resaltar(m.chasis, palabras)} · ${resaltar(m.colorPrimario || m.color || 'sin color', palabras)}${m.anio ? ' · ' + escaparHTML(m.anio) : ''}</span>
+                </div>`).join('');
+            if (!lista.length) {
+                html = `<div class="opcion-moto-nota">Ninguna moto de esta sucursal coincide con "${escaparHTML(texto)}".</div>`;
+            } else if (lista.length > opcionesMotoActuales.length) {
+                html += `<div class="opcion-moto-nota">Se muestran ${opcionesMotoActuales.length} de ${lista.length}. Seguí escribiendo para acotar.</div>`;
+            }
+            cont.innerHTML = html;
+            cont.style.display = 'block';
+            input.setAttribute('aria-expanded', 'true');
+            cont.querySelectorAll('.opcion-moto').forEach(el => {
+                // mousedown (antes que el blur del campo) para que el clic siempre elija.
+                el.addEventListener('mousedown', e => { e.preventDefault(); elegirMotoTraslado(opcionesMotoActuales[Number(el.dataset.i)]); });
+            });
+        }
+
+        function teclaBuscadorMoto(e) {
+            const cont = document.getElementById('traslado-moto-opciones');
+            const abierta = cont.style.display !== 'none' && opcionesMotoActuales.length;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                if (!abierta) { buscarMotoTraslado(); e.preventDefault(); return; }
+                e.preventDefault();
+                const n = opcionesMotoActuales.length;
+                opcionMotoActiva = e.key === 'ArrowDown' ? (opcionMotoActiva + 1) % n : (opcionMotoActiva - 1 + n) % n;
+                cont.querySelectorAll('.opcion-moto').forEach((el, i) => {
+                    el.classList.toggle('activa', i === opcionMotoActiva);
+                    el.setAttribute('aria-selected', String(i === opcionMotoActiva));
+                });
+                const activa = document.getElementById('opcion-moto-' + opcionMotoActiva);
+                if (activa) activa.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (abierta && opcionMotoActiva >= 0) elegirMotoTraslado(opcionesMotoActuales[opcionMotoActiva]);
+                else if (abierta && opcionesMotoActuales.length === 1) elegirMotoTraslado(opcionesMotoActuales[0]);
+            } else if (e.key === 'Escape') {
+                if (abierta) { e.preventDefault(); e.stopPropagation(); cerrarOpcionesMoto(); }
+            }
+        }
+
+        let relojCerrarOpciones = null;
+        function cerrarOpcionesMotoPronto() {
+            clearTimeout(relojCerrarOpciones);
+            relojCerrarOpciones = setTimeout(cerrarOpcionesMoto, 150);
+        }
+        function cerrarOpcionesMoto() {
+            const cont = document.getElementById('traslado-moto-opciones');
+            cont.style.display = 'none';
+            cont.innerHTML = '';
+            document.getElementById('traslado-moto-buscar').setAttribute('aria-expanded', 'false');
+            opcionesMotoActuales = [];
+            opcionMotoActiva = -1;
+        }
+
+        function elegirMotoTraslado(m) {
+            if (!m) return;
+            document.getElementById('traslado-moto-select').value = m.chasis;
+            const caja = document.getElementById('traslado-moto-elegida');
+            caja.innerHTML = `
+                <div><strong>${escaparHTML(m.id)}</strong> · ${escaparHTML(m.marca + ' ' + m.modelo)}${m.disponibilidad === 'Prospectada' ? ' <span class="badge badge-prospectada">Prospectada</span>' : ''}
+                    <span class="detalle">Chasis ${escaparHTML(m.chasis)} · ${escaparHTML(m.colorPrimario || m.color || 'sin color')}${m.anio ? ' · ' + escaparHTML(m.anio) : ''}</span></div>
+                <button type="button" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12.5px;" onclick="quitarMotoTraslado(true)">Cambiar</button>`;
+            caja.style.display = 'flex';
+            document.getElementById('traslado-buscador').style.display = 'none';
+            cerrarOpcionesMoto();
+        }
+
+        function quitarMotoTraslado(enfocar) {
+            document.getElementById('traslado-moto-select').value = '';
+            const caja = document.getElementById('traslado-moto-elegida');
+            caja.style.display = 'none';
+            caja.innerHTML = '';
+            document.getElementById('traslado-buscador').style.display = '';
+            if (enfocar) {
+                const input = document.getElementById('traslado-moto-buscar');
+                input.value = '';
+                input.focus();
+            }
         }
 
         // Tarjetas de la sección Sucursales: se arman desde la lista SUCURSALES,
@@ -3883,6 +4420,128 @@
             'GENESIS': ['KLIK 150', 'GK 125', 'GKA 150 G', 'GE 150-6', 'BOLT 160', 'CR 3 200', 'SX1 150', 'SX2 200', 'SX3 250']
         };
 
+        // ===== Nomenclatura: marcas, modelos y colores =====
+        // Clave para comparar sin importar mayúsculas, tildes, espacios ni
+        // guiones: "cb 160-r" y "CB160R" dan la misma clave.
+        function claveTexto(valor) {
+            return String(valor == null ? '' : valor).normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        const MARCAS_OFICIALES = Object.keys(modelosPorMarca);
+        const MARCA_POR_CLAVE = {};
+        MARCAS_OFICIALES.forEach(mar => { MARCA_POR_CLAVE[claveTexto(mar)] = mar; });
+        const MODELO_POR_CLAVE = {};   // marca → { clave → nombre oficial }
+        const MARCAS_DE_MODELO = {};   // clave de modelo → marcas que lo tienen
+        MARCAS_OFICIALES.forEach(mar => {
+            MODELO_POR_CLAVE[mar] = {};
+            modelosPorMarca[mar].forEach(mod => {
+                const k = claveTexto(mod);
+                MODELO_POR_CLAVE[mar][k] = mod;
+                (MARCAS_DE_MODELO[k] = MARCAS_DE_MODELO[k] || []).push(mar);
+            });
+        });
+
+        // Devuelven el nombre oficial ("honda" → "HONDA", "cb 160 r" → "CB160R"), o '' si no existe.
+        function marcaOficial(valor) { return MARCA_POR_CLAVE[claveTexto(valor)] || ''; }
+        function modeloOficial(marca, valor) {
+            const tabla = MODELO_POR_CLAVE[marca];
+            return (tabla && tabla[claveTexto(valor)]) || '';
+        }
+
+        // Distancia de edición (para sugerir "¿quisiste decir…?").
+        function distanciaTexto(a, b) {
+            const fila = Array.from({ length: b.length + 1 }, (_, j) => j);
+            for (let i = 1; i <= a.length; i++) {
+                let previo = fila[0];
+                fila[0] = i;
+                for (let j = 1; j <= b.length; j++) {
+                    const tmp = fila[j];
+                    fila[j] = Math.min(fila[j] + 1, fila[j - 1] + 1, previo + (a[i - 1] === b[j - 1] ? 0 : 1));
+                    previo = tmp;
+                }
+            }
+            return fila[b.length];
+        }
+
+        // Hasta 3 nombres parecidos al escrito (los que lo contienen o se
+        // diferencian en pocas letras).
+        function sugerencias(valor, opciones) {
+            const k = claveTexto(valor);
+            if (!k) return [];
+            return opciones
+                .map(op => {
+                    const ko = claveTexto(op);
+                    const contiene = ko.includes(k) || k.includes(ko);
+                    return { op, d: contiene ? Math.abs(ko.length - k.length) * 0.1 : distanciaTexto(k, ko) };
+                })
+                .filter(x => x.d <= Math.max(2, Math.floor(k.length / 3)))
+                .sort((a, b) => a.d - b.d)
+                .slice(0, 3)
+                .map(x => x.op);
+        }
+
+        // Colores primarios: la nomenclatura estándar para filtrar y reportar.
+        // El "color de fábrica" es libre (ej. "Rojo Perla Metálico").
+        // IMPORTANTE: debe ser IGUAL a la lista de Code.gs.
+        const COLORES_PRIMARIOS = [
+            'Amarillo', 'Azul', 'Beige', 'Blanco', 'Café', 'Celeste', 'Dorado', 'Gris',
+            'Morado', 'Naranja', 'Negro', 'Plateado', 'Rojo', 'Rosado', 'Verde', 'Vino'
+        ];
+        const SINONIMOS_COLOR = {
+            negra: 'Negro', black: 'Negro', blanca: 'Blanco', white: 'Blanco',
+            gray: 'Gris', grey: 'Gris', grafito: 'Gris', plata: 'Plateado', plateada: 'Plateado', silver: 'Plateado',
+            roja: 'Rojo', red: 'Rojo', blue: 'Azul', green: 'Verde', amarilla: 'Amarillo', yellow: 'Amarillo',
+            anaranjado: 'Naranja', anaranjada: 'Naranja', orange: 'Naranja', marron: 'Café', brown: 'Café',
+            morada: 'Morado', violeta: 'Morado', purpura: 'Morado', purple: 'Morado',
+            rosada: 'Rosado', rosa: 'Rosado', pink: 'Rosado', dorada: 'Dorado', oro: 'Dorado', gold: 'Dorado',
+            vinotinto: 'Vino', guinda: 'Vino', borgona: 'Vino', crema: 'Beige'
+        };
+        const COLOR_POR_CLAVE = Object.assign({}, SINONIMOS_COLOR);
+        COLORES_PRIMARIOS.forEach(c => { COLOR_POR_CLAVE[claveTexto(c)] = c; });
+
+        // "rojo" / "ROJA" / "Red" → "Rojo"; '' si no es un color primario.
+        function normalizarColorPrimario(valor) {
+            return COLOR_POR_CLAVE[claveTexto(valor)] || '';
+        }
+
+        // Saca el color primario del color de fábrica solo si es claro:
+        // "Gris Grafito Mate" → Gris; "Negro con Rojo" → '' (lo elige una persona).
+        function deducirColorPrimario(colorFabrica) {
+            const encontrados = new Set();
+            String(colorFabrica == null ? '' : colorFabrica).normalize('NFD').replace(/[̀-ͯ]/g, '')
+                .toLowerCase().split(/[^a-z0-9]+/)
+                .forEach(p => { const c = normalizarColorPrimario(p); if (c) encontrados.add(c); });
+            return encontrados.size === 1 ? [...encontrados][0] : '';
+        }
+
+        function llenarListasColores() {
+            const select = document.getElementById('color-primario-select');
+            if (select) {
+                select.innerHTML = '<option value="">Seleccionar color primario</option>' +
+                    COLORES_PRIMARIOS.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+            const lista = document.getElementById('lista-colores-primarios');
+            if (lista) {
+                lista.innerHTML = COLORES_PRIMARIOS.map(c => `<option value="${c}"></option>`).join('') +
+                    '<option value="Sin asignar"></option>';
+            }
+        }
+
+        // Al escribir el color de fábrica se sugiere el primario, salvo que
+        // la persona ya lo haya elegido a mano.
+        function sugerirColorPrimario() {
+            const select = document.getElementById('color-primario-select');
+            if (select.value && select.dataset.auto !== '1') return;
+            const deducido = deducirColorPrimario(document.getElementById('color-input').value);
+            select.value = deducido;
+            select.dataset.auto = '1';
+        }
+
+        function elegirColorPrimarioAMano() {
+            document.getElementById('color-primario-select').dataset.auto = '0';
+        }
+
         function updateModelos() {
             const marcaSelect = document.getElementById('marca-select');
             const modeloSelect = document.getElementById('modelo-select');
@@ -3951,9 +4610,11 @@
             };
             document.getElementById('section-title').textContent = titles[sectionId];
 
-            // Close sidebar on mobile
+            // En el celular, cierra el menú lateral (si estaba abierto). Antes lo
+            // "alternaba": si se llegaba a una sección desde otro botón, lo abría.
             if (window.innerWidth <= 768) {
-                toggleSidebar();
+                document.querySelector('.sidebar').classList.remove('active');
+                document.querySelector('.sidebar-overlay').classList.remove('active');
             }
         }
 
@@ -3994,6 +4655,8 @@
             document.getElementById('traslado-para-select').value = '';
             updateMotosTraslado();
             document.getElementById('trasladosModal').classList.add('active');
+            const buscador = document.getElementById('traslado-moto-buscar');
+            if (!buscador.disabled && window.matchMedia('(min-width: 769px)').matches) buscador.focus();
         }
 
         function closeModal(modalId) {
@@ -4035,6 +4698,9 @@
             updateModelos();
             document.getElementById('anio-input').value = '';
             document.getElementById('color-input').value = '';
+            const selColor = document.getElementById('color-primario-select');
+            selColor.value = '';
+            selColor.dataset.auto = '1';
             document.getElementById('chasis-input').value = '';
             document.getElementById('motor-input').value = '';
             document.getElementById('poliza-input').value = '';
@@ -4043,6 +4709,7 @@
             document.getElementById('nueva-sucursal-select').value = '';
             document.getElementById('estado-venta-select').value = '';
             document.getElementById('condicion-select').value = '';
+            document.getElementById('casco-select').value = '';
         }
 
         // Muestra en un slot de foto una imagen que ya existe en Drive (al editar).
@@ -4122,11 +4789,23 @@
             resetOCRState();
 
             document.getElementById('nueva-fecha-input').value = m.fecha || '';
-            document.getElementById('marca-select').value = m.marca || '';
+            // Marca y modelo con su nombre oficial del catálogo (por si en el
+            // Sheet quedaron escritos distinto, ej. "Honda" o "CB 160R").
+            const marcaCat = marcaOficial(m.marca);
+            document.getElementById('marca-select').value = marcaCat;
             updateModelos();
-            document.getElementById('modelo-select').value = m.modelo || '';
+            const modeloCat = marcaCat ? modeloOficial(marcaCat, m.modelo) : '';
+            document.getElementById('modelo-select').value = modeloCat;
             document.getElementById('anio-input').value = m.anio || '';
             document.getElementById('color-input').value = m.color || '';
+            const selColor = document.getElementById('color-primario-select');
+            const primarioGuardado = normalizarColorPrimario(m.colorPrimario);
+            selColor.value = primarioGuardado || deducirColorPrimario(m.color);
+            selColor.dataset.auto = primarioGuardado ? '0' : '1';
+            const fueraDeCatalogo = [];
+            if (!marcaCat) fueraDeCatalogo.push('la marca "' + m.marca + '"');
+            else if (!modeloCat) fueraDeCatalogo.push('el modelo "' + m.modelo + '" de ' + marcaCat);
+            if (!selColor.value) fueraDeCatalogo.push('el color primario');
             document.getElementById('chasis-input').value = m.chasis || '';
             document.getElementById('motor-input').value = m.motor || '';
             document.getElementById('poliza-input').value = m.poliza || '';
@@ -4142,6 +4821,7 @@
             bloquearSucursalEnEdicion(sesionActual.rol !== 'admin');
             document.getElementById('estado-venta-select').value = m.estadoVenta || '';
             document.getElementById('condicion-select').value = m.condicion || '';
+            document.getElementById('casco-select').value = m.casco || '';
 
             // Mostrar las fotos que ya tiene guardadas (si las tiene)
             mostrarFotoExistente('ocr-preview', null, m.fotoFicha);
@@ -4150,6 +4830,14 @@
             mostrarFotoExistente('foto-general-preview', 'foto-general-placeholder', m.fotoGeneral);
 
             document.getElementById('addMotosModal').classList.add('active');
+            const avisos = [];
+            if (fueraDeCatalogo.length) {
+                avisos.push('Antes de guardar, elegí ' + listaTexto(fueraDeCatalogo) + ': no coincide con el catálogo del sistema.');
+            }
+            if (!m.casco) {
+                avisos.push('Esta moto no tiene registrado si ingresó con casco: indicalo en "¿Ingresó con casco?" antes de guardar.');
+            }
+            if (avisos.length) avisar(avisos.join('\n\n'), 'info');
         }
 
         // Lee el data URL actual de una imagen de vista previa (si el usuario subió algo)
@@ -4189,6 +4877,7 @@
                 modelo: document.getElementById('modelo-select').value,
                 anio: document.getElementById('anio-input').value.trim(),
                 color: document.getElementById('color-input').value.trim(),
+                colorPrimario: document.getElementById('color-primario-select').value,
                 chasis: document.getElementById('chasis-input').value.trim().toUpperCase(),
                 motor: document.getElementById('motor-input').value.trim(),
                 poliza: document.getElementById('poliza-input').value.trim(),
@@ -4196,10 +4885,11 @@
                 costo: document.getElementById('costo-input').value,
                 sucursal: document.getElementById('nueva-sucursal-select').value,
                 estadoVenta: document.getElementById('estado-venta-select').value,
-                condicion: document.getElementById('condicion-select').value
+                condicion: document.getElementById('condicion-select').value,
+                casco: document.getElementById('casco-select').value
             };
 
-            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'chasis', 'motor', 'poliza', 'precio', 'sucursal', 'estadoVenta', 'condicion'];
+            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'motor', 'poliza', 'precio', 'sucursal', 'estadoVenta', 'condicion', 'casco'];
             const faltantes = obligatorios.filter(campo => !moto[campo]);
             if (faltantes.length > 0) {
                 avisar('Por favor completa todos los campos obligatorios (*).', 'error');
@@ -4264,7 +4954,9 @@
             const chasis = document.getElementById('traslado-moto-select').value;
 
             if (!deSucursal || !paraSucursal || !chasis) {
-                avisar('Por favor completa todos los campos.', 'error');
+                avisar(deSucursal && paraSucursal
+                    ? 'Falta elegir la moto: escribí en el buscador y tocá la moto de la lista.'
+                    : 'Por favor completa todos los campos.', 'error');
                 return;
             }
 
@@ -4328,7 +5020,8 @@
                     'Marca': m.marca,
                     'Modelo': m.modelo,
                     'Año': m.anio || '',
-                    'Color': m.color || '',
+                    'Color de fábrica': m.color || '',
+                    'Color primario': m.colorPrimario || '',
                     'Chasis': m.chasis,
                     'Motor': m.motor || '',
                     'Poliza': m.poliza || '',
@@ -4337,6 +5030,7 @@
                     'Sucursal': m.sucursal,
                     'Estado Venta': m.estadoVenta,
                     'Condicion': m.condicion,
+                    'Casco': m.casco || 'Sin registrar',
                     'Disponibilidad': m.disponibilidad,
                     // La hora solo aparece en el archivo descargado, no en pantalla.
                     'Fecha y Hora de Registro': m.fechaHoraRegistro || ''
@@ -4441,6 +5135,32 @@
         }
 
         // ===== Importar inventario desde Excel =====
+        const ESTADOS_VENTA = ['Consignada', 'Facturada'];
+        const CONDICIONES = ['Óptimas condiciones', 'Daño mecánico', 'Daño estético', 'Daño menor'];
+        const ENCABEZADOS_PLANTILLA = ['Fecha Ingreso', 'Marca', 'Modelo', 'Año', 'Color de fábrica', 'Color primario', 'Chasis', 'Motor', 'Poliza', 'Precio Venta', 'Costo', 'Sucursal', 'Estado Venta', 'Condicion', 'Casco'];
+
+        // Hoja "Catálogo": los nombres exactos que acepta el sistema.
+        function hojaCatalogo() {
+            const pares = [];
+            MARCAS_OFICIALES.forEach(mar => modelosPorMarca[mar].forEach(mod => pares.push([mar, mod])));
+            const OPCIONES_CASCO = ['Sí', 'No'];
+            const alto = Math.max(pares.length, COLORES_PRIMARIOS.length, NOMBRES_SUCURSALES.length, CONDICIONES.length);
+            const filas = [['Marca', 'Modelo', '', 'Color primario', '', 'Sucursal', '', 'Estado Venta', '', 'Condicion', '', 'Casco']];
+            for (let i = 0; i < alto; i++) {
+                filas.push([
+                    pares[i] ? pares[i][0] : '', pares[i] ? pares[i][1] : '', '',
+                    COLORES_PRIMARIOS[i] || '', '',
+                    NOMBRES_SUCURSALES[i] || '', '',
+                    ESTADOS_VENTA[i] || '', '',
+                    CONDICIONES[i] || '', '',
+                    OPCIONES_CASCO[i] || ''
+                ]);
+            }
+            const hoja = XLSX.utils.aoa_to_sheet(filas);
+            hoja['!cols'] = [{ wch: 10 }, { wch: 24 }, { wch: 3 }, { wch: 15 }, { wch: 3 }, { wch: 32 }, { wch: 3 }, { wch: 13 }, { wch: 3 }, { wch: 20 }, { wch: 3 }, { wch: 8 }];
+            return hoja;
+        }
+
         async function descargarPlantillaImportacion() {
             try {
                 await prepararExcel();
@@ -4448,18 +5168,19 @@
                 avisar('No se pudo preparar la plantilla: ' + err.message, 'error');
                 return;
             }
-            const encabezados = ['Fecha Ingreso', 'Marca', 'Modelo', 'Año', 'Color', 'Chasis', 'Motor', 'Poliza', 'Precio Venta', 'Costo', 'Sucursal', 'Estado Venta', 'Condicion'];
-            const filaEjemplo = ['2025-01-15', 'HONDA', 'CB160R', '2025', 'Negro', 'LRSYCMLE4V0E68735', '163FML004598C7', '4-14234', 1850, 1400, 'Gabriela Mistral', 'Consignada', 'Óptimas condiciones'];
+            const sucursalEjemplo = sesionActual && sesionActual.rol !== 'admin' && sesionActual.sucursal ? sesionActual.sucursal : 'Gabriela Mistral';
+            const filaEjemplo = ['2025-01-15', 'HONDA', 'CB160R', '2025', 'Negro Mate', 'Negro', 'LRSYCMLE4V0E68735', '163FML004598C7', '4-14234', 1850, 1400, sucursalEjemplo, 'Consignada', 'Óptimas condiciones', 'Sí'];
 
-            const hoja = XLSX.utils.aoa_to_sheet([encabezados, filaEjemplo]);
+            const hoja = XLSX.utils.aoa_to_sheet([ENCABEZADOS_PLANTILLA, filaEjemplo]);
             const libro = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(libro, hoja, 'Inventario');
+            XLSX.utils.book_append_sheet(libro, hojaCatalogo(), 'Catálogo');
             XLSX.writeFile(libro, 'Plantilla_Importacion_Moto_Sivar.xlsx');
         }
 
         function normalizarTexto(str) {
             return String(str || '')
-                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .normalize('NFD').replace(/[̀-ͯ]/g, '')
                 .toLowerCase()
                 .replace(/[^a-z0-9]/g, '');
         }
@@ -4469,7 +5190,9 @@
             marca: 'marca',
             modelo: 'modelo',
             anio: 'anio', ano: 'anio', anno: 'anio',
-            color: 'color',
+            // "Color" (plantilla vieja) es el color de fábrica.
+            color: 'color', colordefabrica: 'color', colorfabrica: 'color', colororiginal: 'color',
+            colorprimario: 'colorPrimario', colorprincipal: 'colorPrimario', colorbase: 'colorPrimario',
             chasis: 'chasis', numerodechasis: 'chasis', nchasis: 'chasis', nodechasis: 'chasis',
             motor: 'motor', numerodemotor: 'motor', nmotor: 'motor', nodemotor: 'motor',
             poliza: 'poliza', numerodepoliza: 'poliza', npoliza: 'poliza', nodepoliza: 'poliza',
@@ -4477,14 +5200,14 @@
             costo: 'costo',
             sucursal: 'sucursal',
             estadodeventa: 'estadoVenta', estadoventa: 'estadoVenta', estado: 'estadoVenta',
-            condicion: 'condicion', condiciondelamoto: 'condicion'
+            condicion: 'condicion', condiciondelamoto: 'condicion',
+            casco: 'casco', concasco: 'casco', ingresoconcasco: 'casco', ingresocasco: 'casco', ingresaconcasco: 'casco'
         };
 
         function normalizarSucursalImportada(valor) {
             const v = normalizarTexto(valor);
             if (v.indexOf('gabriela') !== -1 || v.indexOf('mistral') !== -1) return 'Gabriela Mistral';
             if (v.indexOf('distribucion') !== -1 || v.indexOf('centro') !== -1 || v === 'cd' || v === 'cdmotosivar') return 'Centro de Distribución Motosivar';
-            // La Mascota cerró: si un Excel viejo la trae, el servidor omite esa fila y lo informa.
             if (v.indexOf('mascota') !== -1) return 'La Mascota';
             if (v.indexOf('santaana') !== -1 || v.indexOf('santa') !== -1) return 'Santa Ana';
             return String(valor || '').trim();
@@ -4499,49 +5222,232 @@
 
         function normalizarCondicionImportada(valor) {
             const v = normalizarTexto(valor);
+            if (!v) return 'Óptimas condiciones';
             if (v.indexOf('optim') !== -1) return 'Óptimas condiciones';
             if (v.indexOf('mecanic') !== -1) return 'Daño mecánico';
             if (v.indexOf('estetic') !== -1) return 'Daño estético';
             if (v.indexOf('menor') !== -1) return 'Daño menor';
-            return String(valor || '').trim() || 'Óptimas condiciones';
+            return String(valor || '').trim();
         }
 
+        // Fecha del Excel → "aaaa-mm-dd". Acepta fechas de Excel, 2026-01-15
+        // y 15/01/2026. Devuelve null si el texto no es una fecha válida.
         function normalizarFechaImportada(valor) {
-            if (!valor) return '';
+            if (valor === '' || valor == null) return '';
+            const armar = (y, m, d) => {
+                const f = new Date(y, m - 1, d);
+                if (f.getFullYear() !== y || f.getMonth() !== m - 1 || f.getDate() !== d || y < 1990 || y > 2100) return null;
+                return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+            };
             if (typeof valor === 'number') {
                 const fecha = XLSX.SSF.parse_date_code(valor);
-                if (fecha) {
-                    const mm = String(fecha.m).padStart(2, '0');
-                    const dd = String(fecha.d).padStart(2, '0');
-                    return fecha.y + '-' + mm + '-' + dd;
-                }
+                return fecha ? armar(fecha.y, fecha.m, fecha.d) : null;
             }
-            return String(valor).trim();
+            const t = String(valor).trim();
+            let p = t.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+            if (p) return armar(+p[1], +p[2], +p[3]);
+            p = t.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+            if (p) return armar(+p[3], +p[2], +p[1]); // día/mes/año (formato de El Salvador)
+            return null;
+        }
+
+        // Número del Excel: acepta 1850, "1850", "$1,850.00". null si no es número.
+        function numeroImportado(valor) {
+            if (valor === '' || valor == null) return 0;
+            if (typeof valor === 'number') return valor;
+            const n = Number(String(valor).replace(/[$,\s]/g, ''));
+            return isNaN(n) ? null : n;
         }
 
         function mapearFilaImportada(fila) {
-            const moto = { fecha: '', marca: '', modelo: '', anio: '', color: '', chasis: '', motor: '', poliza: '', precio: 0, costo: 0, sucursal: '', estadoVenta: '', condicion: '' };
-
+            const moto = { fecha: '', marca: '', modelo: '', anio: '', color: '', colorPrimario: '', chasis: '', motor: '', poliza: '', precio: '', costo: '', sucursal: '', estadoVenta: '', condicion: '', casco: '' };
             Object.keys(fila).forEach(encabezadoOriginal => {
                 const clave = SINONIMOS_ENCABEZADOS[normalizarTexto(encabezadoOriginal)];
                 if (clave) moto[clave] = fila[encabezadoOriginal];
             });
-
-            moto.marca = String(moto.marca).trim().toUpperCase();
-            moto.modelo = String(moto.modelo).trim().toUpperCase();
-            moto.chasis = String(moto.chasis).trim().toUpperCase();
-            moto.color = String(moto.color).trim();
-            moto.anio = String(moto.anio).trim();
-            moto.motor = String(moto.motor).trim();
-            moto.poliza = String(moto.poliza).trim();
-            moto.precio = Number(moto.precio) || 0;
-            moto.costo = Number(moto.costo) || 0;
-            moto.sucursal = normalizarSucursalImportada(moto.sucursal);
-            moto.estadoVenta = normalizarEstadoVentaImportado(moto.estadoVenta);
-            moto.condicion = normalizarCondicionImportada(moto.condicion);
-            moto.fecha = normalizarFechaImportada(moto.fecha);
-
+            ['marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'motor', 'poliza', 'sucursal', 'estadoVenta', 'condicion', 'casco'].forEach(c => {
+                moto[c] = String(moto[c] == null ? '' : moto[c]).trim();
+            });
             return moto;
+        }
+
+        // Revisa cada fila contra la nomenclatura del sistema. Devuelve las
+        // motos listas (con los nombres oficiales) y la lista de errores.
+        function revisarFilasImportadas(filas) {
+            const chasisSistema = {};
+            motosDemo.forEach(m => { chasisSistema[claveTexto(m.chasis)] = m; });
+            const chasisArchivo = {};
+            const esAdmin = sesionActual && sesionActual.rol === 'admin';
+            const validas = [];
+            const conErrores = [];
+            const ejemplo = lista => lista.length ? ' ¿Quisiste decir ' + listaTexto(lista.map(x => '"' + x + '"')).replace(/ y /, ' o ') + '?' : '';
+
+            filas.forEach((fila, i) => {
+                const vacia = Object.keys(fila).every(k => String(fila[k] == null ? '' : fila[k]).trim() === '');
+                if (vacia) return;
+                const numFila = fila.__rowNum__ != null ? fila.__rowNum__ + 1 : i + 2;
+                const m = mapearFilaImportada(fila);
+                const errores = [];
+
+                // Marca y modelo: deben existir en el catálogo (se aceptan
+                // diferencias de mayúsculas, espacios o guiones y se guardan
+                // con el nombre oficial).
+                const marca = marcaOficial(m.marca);
+                const marcasDelModelo = MARCAS_DE_MODELO[claveTexto(m.modelo)] || [];
+                if (!m.marca) {
+                    errores.push('Falta la marca.');
+                } else if (!marca) {
+                    const sug = marcasDelModelo.length ? marcasDelModelo : sugerencias(m.marca, MARCAS_OFICIALES);
+                    errores.push('La marca "' + m.marca + '" no existe en el sistema.' + ejemplo(sug));
+                }
+                let modelo = '';
+                if (!m.modelo) {
+                    errores.push('Falta el modelo.');
+                } else if (marca) {
+                    modelo = modeloOficial(marca, m.modelo);
+                    if (!modelo) {
+                        errores.push(marcasDelModelo.length
+                            ? 'El modelo "' + m.modelo + '" es de ' + listaTexto(marcasDelModelo) + ', no de ' + marca + '.'
+                            : 'El modelo "' + m.modelo + '" no existe para ' + marca + '.' + ejemplo(sugerencias(m.modelo, modelosPorMarca[marca])));
+                    }
+                }
+
+                // Color: el primario debe ser de la lista; si no viene, se saca
+                // del color de fábrica cuando es claro.
+                let colorPrimario = '';
+                let colorFabrica = m.color;
+                if (m.colorPrimario) {
+                    colorPrimario = normalizarColorPrimario(m.colorPrimario);
+                    if (!colorPrimario) {
+                        const sug = sugerencias(m.colorPrimario, COLORES_PRIMARIOS);
+                        errores.push('El color primario "' + m.colorPrimario + '" no es válido.' + (sug.length ? ejemplo(sug) : ' Usá uno de la hoja "Catálogo".'));
+                    }
+                } else if (m.color) {
+                    colorPrimario = deducirColorPrimario(m.color);
+                    if (!colorPrimario) errores.push('Falta el color primario: el color de fábrica "' + m.color + '" no indica uno solo. Escribilo en la columna "Color primario".');
+                } else {
+                    errores.push('Falta el color (de fábrica y primario).');
+                }
+                if (!colorFabrica && colorPrimario) colorFabrica = colorPrimario;
+
+                // Chasis: obligatorio y sin repetir (ni en el sistema ni en el archivo).
+                const chasis = m.chasis.toUpperCase();
+                const kChasis = claveTexto(chasis);
+                if (!chasis) {
+                    errores.push('Falta el chasis.');
+                } else if (chasisSistema[kChasis]) {
+                    const existente = chasisSistema[kChasis];
+                    errores.push('El chasis ' + chasis + ' ya está registrado en el sistema (' + existente.id + ', ' + existente.sucursal + (existente.disponibilidad === 'Vendida' ? ', vendida' : '') + ').');
+                } else if (chasisArchivo[kChasis]) {
+                    errores.push('El chasis ' + chasis + ' está repetido en el archivo (también en la fila ' + chasisArchivo[kChasis] + ').');
+                } else {
+                    chasisArchivo[kChasis] = numFila;
+                }
+
+                const sucursal = normalizarSucursalImportada(m.sucursal);
+                if (!m.sucursal) {
+                    errores.push('Falta la sucursal.');
+                } else if (!NOMBRES_SUCURSALES.includes(sucursal)) {
+                    errores.push(sucursal === 'La Mascota' ? 'La sucursal La Mascota ya no opera.' : 'La sucursal "' + m.sucursal + '" no existe. Usá: ' + listaTexto(NOMBRES_SUCURSALES) + '.');
+                } else if (!esAdmin && sucursal !== sesionActual.sucursal) {
+                    errores.push('Es de ' + sucursal + ': solo podés cargar motos a ' + sesionActual.sucursal + '.');
+                }
+
+                const estadoVenta = normalizarEstadoVentaImportado(m.estadoVenta);
+                if (!m.estadoVenta) errores.push('Falta el estado de venta (Consignada o Facturada).');
+                else if (!ESTADOS_VENTA.includes(estadoVenta)) errores.push('El estado de venta "' + m.estadoVenta + '" no es válido (Consignada o Facturada).');
+
+                const condicion = normalizarCondicionImportada(m.condicion);
+                if (!CONDICIONES.includes(condicion)) errores.push('La condición "' + m.condicion + '" no es válida. Usá: ' + listaTexto(CONDICIONES) + '.');
+
+                // Casco: opcional al importar (vacío = sin registrar); si viene, Sí o No.
+                let casco = '';
+                if (m.casco) {
+                    casco = normalizarCasco(m.casco);
+                    if (!casco) errores.push('El casco "' + m.casco + '" no es válido. Usá Sí o No (o dejalo vacío si no se sabe).');
+                }
+
+                const anio = m.anio.replace(/\.0+$/, '');
+                if (anio && !/^(19|20)\d{2}$/.test(anio)) errores.push('El año "' + m.anio + '" no es válido (ej. 2026).');
+
+                const fecha = normalizarFechaImportada(m.fecha);
+                if (fecha === null) errores.push('La fecha de ingreso "' + m.fecha + '" no es válida (usá 15/01/2026 o 2026-01-15).');
+
+                const precio = numeroImportado(m.precio);
+                const costo = numeroImportado(m.costo);
+                if (precio === null) errores.push('El precio "' + m.precio + '" no es un número.');
+                if (costo === null) errores.push('El costo "' + m.costo + '" no es un número.');
+
+                const resumen = [m.marca, m.modelo].filter(Boolean).join(' ') + (chasis ? ' · ' + chasis : '');
+                if (errores.length) {
+                    conErrores.push({ fila: numFila, resumen, errores, original: fila });
+                    return;
+                }
+                validas.push({
+                    fecha, marca, modelo, anio, color: colorFabrica, colorPrimario, chasis,
+                    motor: m.motor, poliza: m.poliza, precio, costo, sucursal, estadoVenta, condicion, casco
+                });
+            });
+            return { validas, conErrores };
+        }
+
+        // Archivo con SOLO las filas con error (columna "Errores" al inicio)
+        // + la hoja "Catálogo". Se corrige y se vuelve a importar tal cual.
+        function descargarErroresImportacion(conErrores, nombreArchivo) {
+            const filas = conErrores.map(e => {
+                const o = { 'Errores': e.errores.join(' '), 'Fila original': e.fila };
+                Object.keys(e.original).forEach(k => { if (k !== 'Errores' && k !== 'Fila original') o[k] = e.original[k]; });
+                return o;
+            });
+            const hoja = XLSX.utils.json_to_sheet(filas);
+            hoja['!cols'] = [{ wch: 70 }, { wch: 8 }];
+            const libro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(libro, hoja, 'Errores');
+            XLSX.utils.book_append_sheet(libro, hojaCatalogo(), 'Catálogo');
+            const base = String(nombreArchivo || 'archivo').replace(/\.[^.]+$/, '').replace(/[^\w\-]+/g, '_').slice(0, 40);
+            XLSX.writeFile(libro, 'Errores_' + base + '_' + hoyLocal() + '.xlsx');
+        }
+
+        // Muestra la revisión. Resuelve 'importar' o null (cancelar).
+        const MAX_ERRORES_EN_PANTALLA = 200;
+        function mostrarRevisionImportacion(revision, nombreArchivo) {
+            return new Promise(resolve => {
+                const modal = document.getElementById('revisionImportModal');
+                const nValidas = revision.validas.length;
+                const nErrores = revision.conErrores.length;
+                document.getElementById('revision-resumen').innerHTML =
+                    `<strong>${nValidas + nErrores}</strong> filas en el archivo · <strong>${nValidas}</strong> listas para importar · <strong style="color:#b42318">${nErrores}</strong> con errores.` +
+                    (nValidas ? '' : '<br>No hay ninguna fila lista: corregí el archivo y volvé a importarlo.');
+                const visibles = revision.conErrores.slice(0, MAX_ERRORES_EN_PANTALLA);
+                document.getElementById('revision-lista').innerHTML = visibles.map(e => `
+                    <div class="revision-fila" role="listitem">
+                        <strong>Fila ${e.fila}</strong>${e.resumen ? ' · ' + escaparHTML(e.resumen) : ''}
+                        <ul>${e.errores.map(x => '<li>' + escaparHTML(x) + '</li>').join('')}</ul>
+                    </div>`).join('') +
+                    (nErrores > visibles.length ? `<div class="revision-fila">… y ${nErrores - visibles.length} filas más con errores (están todas en el archivo de errores).</div>` : '');
+
+                const btnImportar = document.getElementById('revision-importar');
+                const btnDescargar = document.getElementById('revision-descargar');
+                const btnCancelar = document.getElementById('revision-cancelar');
+                btnImportar.style.display = nValidas ? '' : 'none';
+                btnImportar.textContent = '📤 Importar ' + (nValidas === 1 ? 'la válida' : 'las ' + nValidas + ' válidas');
+                btnCancelar.textContent = nValidas ? 'Cancelar' : 'Cerrar';
+
+                function terminar(valor) {
+                    modal.classList.remove('active');
+                    btnImportar.onclick = btnDescargar.onclick = btnCancelar.onclick = null;
+                    resolve(valor);
+                }
+                btnImportar.onclick = () => terminar('importar');
+                btnCancelar.onclick = () => terminar(null);
+                btnDescargar.onclick = () => {
+                    try { descargarErroresImportacion(revision.conErrores, nombreArchivo); }
+                    catch (err) { avisar('No se pudo descargar el archivo de errores: ' + err.message, 'error'); }
+                };
+                document.getElementById('revision-lista').scrollTop = 0;
+                modal.classList.add('active');
+                btnDescargar.focus();
+            });
         }
 
         // Lee un archivo como ArrayBuffer usando FileReader (más compatible
@@ -4570,41 +5476,36 @@
                     avisar('El archivo no tiene filas de datos.', 'error');
                     return;
                 }
-
-                const motos = [];
-                const errores = [];
-
-                filas.forEach((fila, i) => {
-                    const moto = mapearFilaImportada(fila);
-                    if (!moto.chasis || !moto.marca || !moto.modelo || !moto.sucursal) {
-                        errores.push('Fila ' + (i + 2) + ': faltan datos obligatorios (marca, modelo, chasis o sucursal).');
-                        return;
-                    }
-                    motos.push(moto);
-                });
-
-                if (motos.length === 0) {
-                    avisar('No se encontró ninguna fila válida para importar.\n\n' + errores.join('\n'), 'error');
+                const encabezados = Object.keys(filas[0]).map(normalizarTexto);
+                if (!encabezados.some(h => SINONIMOS_ENCABEZADOS[h] === 'marca') || !encabezados.some(h => SINONIMOS_ENCABEZADOS[h] === 'chasis')) {
+                    avisar('No se reconocen las columnas del archivo (faltan "Marca" y/o "Chasis" en la primera fila). Usá "📄 Descargar plantilla".', 'error');
                     return;
                 }
 
-                let mensaje = '¿Importar ' + motos.length + ' moto(s) al inventario?';
-                if (sesionActual.rol !== 'admin') {
-                    const ajenas = motos.filter(m => m.sucursal !== sesionActual.sucursal).length;
-                    if (ajenas > 0) {
-                        mensaje += '\n\n' + ajenas + ' fila(s) son de otra sucursal y se omitirán: solo podés cargar motos a ' + sesionActual.sucursal + '.';
-                    }
+                const revision = revisarFilasImportadas(filas);
+                const motos = revision.validas;
+                if (motos.length === 0 && revision.conErrores.length === 0) {
+                    avisar('El archivo no tiene filas con datos.', 'error');
+                    return;
                 }
-                if (errores.length > 0) {
-                    mensaje += '\n\n' + errores.length + ' fila(s) se omitirán por datos incompletos:\n' + errores.slice(0, 5).join('\n');
+
+                if (revision.conErrores.length > 0) {
+                    if ((await mostrarRevisionImportacion(revision, file.name)) !== 'importar') return;
+                } else if (!(await confirmar('Todas las filas coinciden con el catálogo del sistema.\n\n¿Importar ' + motos.length + ' moto(s) al inventario?', '📤 Importar'))) {
+                    return;
                 }
-                if (!(await confirmar(mensaje, '📤 Importar'))) return;
 
                 const resultado = await apiPost('importarMotos', { motos }, { textoBloqueo: 'Importando ' + motos.length + ' motos…' });
 
-                avisar('Importación completa.\nAgregadas: ' + resultado.agregadas + '\nOmitidas por chasis duplicado: ' + resultado.duplicadas +
-                    (resultado.sucursalInvalida ? '\nOmitidas por sucursal que no existe (ej. La Mascota): ' + resultado.sucursalInvalida : '') +
-                    (resultado.otraSucursal ? '\nOmitidas por ser de otra sucursal: ' + resultado.otraSucursal : ''), 'ok');
+                const omitidas = [];
+                if (resultado.duplicadas) omitidas.push(resultado.duplicadas + ' por chasis ya registrado');
+                if (resultado.sucursalInvalida) omitidas.push(resultado.sucursalInvalida + ' por sucursal que no existe');
+                if (resultado.otraSucursal) omitidas.push(resultado.otraSucursal + ' por ser de otra sucursal');
+                if (resultado.colorInvalido) omitidas.push(resultado.colorInvalido + ' por color primario inválido');
+                if (resultado.cascoInvalido) omitidas.push(resultado.cascoInvalido + ' por casco inválido');
+                avisar('Importación completa: ' + resultado.agregadas + ' moto(s) agregada(s).' +
+                    (revision.conErrores.length ? '\nNo se importaron ' + revision.conErrores.length + ' fila(s) con errores.' : '') +
+                    (omitidas.length ? '\nOmitidas al guardar: ' + omitidas.join(', ') + '.' : ''), 'ok');
             } catch (err) {
                 avisar('No se pudo importar el archivo: ' + err.message, 'error');
             } finally {
@@ -4623,12 +5524,17 @@
                 document.getElementById('confirmar-no').click();
                 return;
             }
+            if (el.id === 'revisionImportModal') {
+                document.getElementById('revision-cancelar').click();
+                return;
+            }
             el.classList.remove('active');
         }
 
         // Inicialización al cargar la página: si ya había una sesión abierta en
         // esta pestaña, entra directo; si no, se queda en la pantalla de login.
         actualizarSelectsSucursales();
+        llenarListasColores();
         actualizarConteosSucursales();
         if (restaurarSesion()) {
             mostrarApp();
