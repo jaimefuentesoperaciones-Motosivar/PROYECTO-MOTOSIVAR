@@ -664,6 +664,34 @@
             color: #b45309;
         }
 
+        /* Campo de color primario: MAYÚSCULAS y opciones que saltan al escribir */
+        .combo-color { position: relative; }
+        .combo-color input { width: 100%; text-transform: uppercase; }
+        .combo-color .buscador-opciones {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            z-index: 40;
+            max-height: 230px;
+        }
+        .opcion-color { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: 0.3px; }
+        .punto-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            flex: none;
+        }
+        .punto-color.sin { background: repeating-linear-gradient(45deg, #fff, #fff 3px, #e5e7eb 3px, #e5e7eb 6px); }
+        input.campo-invalido { border-color: #b42318 !important; }
+        .error-campo { color: #b42318; font-size: 12.5px; margin-top: 6px; }
+
+        .historico-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .historico-tabs .btn { min-width: 150px; justify-content: center; }
+        .badge-retiro { background: #e8eef7; color: #1d3a63; white-space: nowrap; }
+
         .casco-si { color: #1a7f4b; }
         .casco-no { color: #b42318; font-weight: 600; }
 
@@ -1635,7 +1663,7 @@
                         <div class="stat-card">
                             <div class="stat-value" id="stat-total">0</div>
                             <div class="stat-label">Total en inventario</div>
-                            <div class="stat-sub">Disponibles + prospectadas (sin vendidas)</div>
+                            <div class="stat-sub">Disponibles + prospectadas (sin vendidas ni retiradas)</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-value" id="stat-disponibles">0</div>
@@ -1686,7 +1714,7 @@
                         <div class="columna-visuales">
                             <div class="card">
                                 <h2 id="pastel-titulo">Participación por marca</h2>
-                                <p class="card-ayuda" id="pastel-ayuda">Sobre el total en inventario (sin vendidas)</p>
+                                <p class="card-ayuda" id="pastel-ayuda">Sobre el total en inventario (sin vendidas ni retiradas)</p>
                                 <div class="donut-wrap" id="pastel-contenedor"></div>
                             </div>
                             <div class="card">
@@ -1754,8 +1782,13 @@
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label>Color primario</label>
-                                <input type="text" id="filtro-color" list="lista-colores-primarios" placeholder="Ej: Rojo" autocomplete="off" oninput="filtrarInventarioConPausa();">
-                                <datalist id="lista-colores-primarios"></datalist>
+                                <div class="combo-color">
+                                    <input type="text" id="filtro-color" placeholder="Ej: ROJO" autocomplete="off" spellcheck="false"
+                                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="filtro-color-opciones"
+                                        oninput="escribirColor('filtro-color'); filtrarInventarioConPausa();" onfocus="abrirOpcionesColor('filtro-color')"
+                                        onkeydown="teclaColor(event, 'filtro-color')" onblur="alSalirColor('filtro-color')">
+                                    <div id="filtro-color-opciones" class="buscador-opciones" role="listbox" style="display:none;"></div>
+                                </div>
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label>Casco</label>
@@ -1909,6 +1942,7 @@
                                     <option>Por Condición</option>
                                     <option>Por Estado de Venta</option>
                                     <option>Movimientos</option>
+                                    <option>Retiradas</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1936,7 +1970,12 @@
 
                 <!-- HISTÓRICO -->
                 <section id="historico" class="section">
-                    <div class="card">
+                    <div class="historico-tabs" role="tablist" aria-label="Tipo de salida del inventario">
+                        <button type="button" role="tab" id="tab-hist-vendidas" class="btn btn-primary" aria-selected="true" onclick="verHistorico('vendidas')">💰 Vendidas <span id="hist-n-vendidas"></span></button>
+                        <button type="button" role="tab" id="tab-hist-retiradas" class="btn btn-secondary" aria-selected="false" onclick="verHistorico('retiradas')">📤 Retiradas <span id="hist-n-retiradas"></span></button>
+                    </div>
+
+                    <div class="card" id="historico-vendidas">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h2 style="margin-bottom: 6px;">Unidades vendidas</h2>
@@ -1960,6 +1999,34 @@
                                     </tr>
                                 </thead>
                                 <tbody id="historico-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card" id="historico-retiradas" style="display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 style="margin-bottom: 6px;">Unidades retiradas</h2>
+                                <p style="font-size: 13px; color: var(--ink-muted); margin-bottom: 20px;">Motos que retiró la marca u otro concesionario. Se conserva la sucursal de origen, quién la retiró y la fecha.</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="exportarHistorico()">📥 Exportar Retiradas</button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha Retiro</th>
+                                        <th>Retira</th>
+                                        <th>Nombre de quien retira</th>
+                                        <th>Marca</th>
+                                        <th>Modelo</th>
+                                        <th>Chasis</th>
+                                        <th>Sucursal Origen</th>
+                                        <th>Registrado por</th>
+                                        <th class="solo-escritura">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historico-retiradas-table"></tbody>
                             </table>
                         </div>
                     </div>
@@ -2108,10 +2175,16 @@
             </div>
 
             <div class="form-group">
-                <label>Color primario *</label>
-                <select id="color-primario-select" onchange="elegirColorPrimarioAMano()" required>
-                    <option value="">Seleccionar color primario</option>
-                </select>
+                <label for="color-primario-input">Color primario *</label>
+                <div class="combo-color">
+                    <input type="text" id="color-primario-input" autocomplete="off" spellcheck="false" maxlength="20"
+                        placeholder="Escribí para buscar: NEGRO, AZUL, BLANCO…"
+                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="color-primario-input-opciones"
+                        oninput="escribirColor('color-primario-input')" onfocus="abrirOpcionesColor('color-primario-input')"
+                        onkeydown="teclaColor(event, 'color-primario-input')" onblur="alSalirColor('color-primario-input')">
+                    <div id="color-primario-input-opciones" class="buscador-opciones" role="listbox" style="display:none;"></div>
+                </div>
+                <div id="color-primario-error" class="error-campo" style="display:none;">Ese color no está en la lista. Escribí unas letras y elegí una de las opciones.</div>
                 <div class="card-ayuda" style="margin-top: 6px;">Es el color estándar que se usa para filtrar. Se sugiere solo según el color de fábrica; podés cambiarlo.</div>
             </div>
 
@@ -2127,8 +2200,8 @@
             </div>
 
             <div class="form-group">
-                <label>Número de Póliza *</label>
-                <input type="text" id="poliza-input" placeholder="Ej: 4-14234" required>
+                <label>Número de Póliza <span style="font-weight: 400; color: #5b6675;">(opcional)</span></label>
+                <input type="text" id="poliza-input" placeholder="Ej: 4-14234">
             </div>
 
             <div class="form-row">
@@ -2275,6 +2348,43 @@
             <div style="display: flex; gap: 10px; margin-top: 24px;">
                 <button class="btn btn-primary" onclick="guardarClienteVenta()">💾 Guardar</button>
                 <button class="btn btn-secondary" onclick="closeModal('editarVentaModal')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Retirar moto (la retira la marca u otro concesionario) -->
+    <div id="retiroModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="retiro-titulo">Retirar moto</h2>
+                <button class="modal-close" onclick="closeModal('retiroModal')">×</button>
+            </div>
+
+            <p id="retiro-moto-info" style="font-size: 13px; color: var(--ink-muted); margin-bottom: 8px;"></p>
+            <p id="retiro-ayuda" class="card-ayuda" style="margin-bottom: 20px;">La moto sale del inventario y queda en el Histórico (pestaña Retiradas).</p>
+
+            <div class="form-group">
+                <label for="retiro-tipo-select">¿Quién la retira? *</label>
+                <select id="retiro-tipo-select" onchange="actualizarTextosRetiro()">
+                    <option value="">Seleccionar</option>
+                    <option value="Marca">La marca</option>
+                    <option value="Otro concesionario">Otro concesionario</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="retiro-nombre-input" id="retiro-nombre-label">Nombre de quien retira *</label>
+                <input type="text" id="retiro-nombre-input" maxlength="120" autocomplete="off" placeholder="Nombre de la persona o empresa" onkeydown="if (event.key === 'Enter') confirmarRetiro()">
+            </div>
+
+            <div class="form-group" id="retiro-fecha-grupo">
+                <label for="retiro-fecha-input">Fecha de retiro *</label>
+                <input type="date" id="retiro-fecha-input">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button class="btn btn-primary" id="retiro-guardar-btn" onclick="confirmarRetiro()">📤 Confirmar retiro</button>
+                <button class="btn btn-secondary" onclick="closeModal('retiroModal')">Cancelar</button>
             </div>
         </div>
     </div>
@@ -2732,7 +2842,11 @@
                 fotoMotor: fila.FotoMotor || '',
                 fotoGeneral: fila.FotoGeneral || '',
                 fechaHoraRegistro: fila.FechaHoraRegistro || '',
-                vendidoPor: String(fila.VendidoPor == null ? '' : fila.VendidoPor)
+                vendidoPor: String(fila.VendidoPor == null ? '' : fila.VendidoPor),
+                tipoRetiro: String(fila.TipoRetiro == null ? '' : fila.TipoRetiro),
+                retiradaPor: String(fila.RetiradaPor == null ? '' : fila.RetiradaPor),
+                fechaRetiro: fila.FechaRetiro || '',
+                retiroRegistradoPor: String(fila.RetiroRegistradoPor == null ? '' : fila.RetiroRegistradoPor)
             };
         }
 
@@ -2951,10 +3065,10 @@
             return String(valor == null ? '' : valor).trim().toUpperCase();
         }
 
-        // Una moto está "en inventario" mientras no se haya vendido
+        // Una moto está "en inventario" mientras no se haya vendido ni retirado
         // (es decir, Disponible o Prospectada).
         function enInventario(m) {
-            return m.disponibilidad !== 'Vendida';
+            return m.disponibilidad !== 'Vendida' && m.disponibilidad !== 'Retirada';
         }
 
         // 2026-10-01  →  01/10/2026 (también acepta "2026-10-01 14:30:00" o ISO).
@@ -3415,6 +3529,7 @@
                     <button class="btn btn-secondary" style="${estilo}" onclick="abrirEditarMoto('${m.id}')">✎ Editar</button>
                     ${botonProspecto}
                     <button class="btn btn-primary" style="${estilo}" onclick="openVentaModal('${m.chasis}')">💰 Vender</button>
+                    <button class="btn btn-secondary" style="${estilo}" onclick="openRetiroModal('${m.chasis}')" title="La retira la marca u otro concesionario">📤 Retirar</button>
                     <button class="btn btn-secondary" style="${estilo}" onclick="abrirEliminarMoto('${m.id}')" title="Eliminar">🗑</button>
                 </div>`;
         }
@@ -3513,6 +3628,139 @@
                 avisar('Cliente corregido: ' + nuevo + '. Quedó registrado el nombre anterior.', 'ok');
             } catch (err) {
                 avisar('No se pudo corregir el cliente: ' + err.message, 'error');
+            }
+        }
+
+        // ===== Retiros: la marca u otro concesionario retira la moto =====
+        // Cada jefe corrige solo los retiros que ÉL registró; Administración, cualquiera.
+        function puedeEditarRetiro(m) {
+            return !!sesionActual && (sesionActual.rol === 'admin' ||
+                (!!m.retiroRegistradoPor && m.retiroRegistradoPor === sesionActual.nombreMostrar));
+        }
+
+        function etiquetaTipoRetiro(tipo) {
+            return tipo === 'Marca' ? 'La marca' : (tipo || '—');
+        }
+
+        function filaRetiradaHTML(m) {
+            const autor = m.retiroRegistradoPor || 'Sin registro';
+            const accion = puedeEditarRetiro(m)
+                ? `<button class="btn btn-secondary" style="padding: 5px 9px; font-size: 11.5px; white-space: nowrap;" onclick="abrirCorregirRetiro('${escaparHTML(m.id)}')">✎ Corregir</button>`
+                : `<span class="aprob-detalle">${m.retiroRegistradoPor ? 'Solo quien lo registró' : 'Solo Administración'}</span>`;
+            return `
+                <tr>
+                    <td style="white-space: nowrap;">${escaparHTML(formatearFechaCorta(m.fechaRetiro))}</td>
+                    <td><span class="badge badge-retiro">${escaparHTML(etiquetaTipoRetiro(m.tipoRetiro))}</span></td>
+                    <td>${escaparHTML(m.retiradaPor)}</td>
+                    <td>${escaparHTML(m.marca)}</td>
+                    <td>${escaparHTML(m.modelo)}</td>
+                    <td>${escaparHTML(m.chasis)}</td>
+                    <td>${escaparHTML(m.sucursal)}</td>
+                    <td><span class="aprob-detalle" style="margin:0;">${escaparHTML(autor)}</span></td>
+                    <td class="solo-escritura">${accion}</td>
+                </tr>
+            `;
+        }
+
+        let retiroModo = 'nuevo';   // 'nuevo' (retirar una moto) o 'corregir' (cambiar quién la retiró)
+        let retiroChasis = null;
+        let retiroId = null;
+
+        // El texto de ayuda cambia según quién retira.
+        function actualizarTextosRetiro() {
+            const tipo = document.getElementById('retiro-tipo-select').value;
+            const etiqueta = document.getElementById('retiro-nombre-label');
+            const campo = document.getElementById('retiro-nombre-input');
+            if (tipo === 'Marca') {
+                etiqueta.textContent = 'Nombre de quien retira por la marca *';
+                campo.placeholder = 'Ej: Honda El Salvador — Juan Pérez';
+            } else if (tipo === 'Otro concesionario') {
+                etiqueta.textContent = 'Concesionario y persona que retira *';
+                campo.placeholder = 'Ej: Moto Centro — Carlos Ramos';
+            } else {
+                etiqueta.textContent = 'Nombre de quien retira *';
+                campo.placeholder = 'Nombre de la persona o empresa';
+            }
+        }
+
+        function openRetiroModal(chasis) {
+            const moto = motosDemo.find(m => m.chasis === chasis);
+            if (!moto) return;
+            if (!verificarPuedeGestionar(moto, 'retirar')) return;
+            if (!enInventario(moto)) {
+                avisar('Esta moto ya no está en el inventario.', 'error');
+                return;
+            }
+            retiroModo = 'nuevo';
+            retiroChasis = chasis;
+            retiroId = null;
+            document.getElementById('retiro-titulo').textContent = 'Retirar moto';
+            document.getElementById('retiro-moto-info').textContent = moto.marca + ' ' + moto.modelo + ' — Chasis: ' + moto.chasis + ' (' + moto.sucursal + ')';
+            document.getElementById('retiro-ayuda').style.display = '';
+            document.getElementById('retiro-tipo-select').value = '';
+            document.getElementById('retiro-nombre-input').value = '';
+            document.getElementById('retiro-fecha-input').value = hoyLocal();
+            document.getElementById('retiro-fecha-grupo').style.display = '';
+            document.getElementById('retiro-guardar-btn').textContent = '📤 Confirmar retiro';
+            actualizarTextosRetiro();
+            document.getElementById('retiroModal').classList.add('active');
+            document.getElementById('retiro-tipo-select').focus();
+        }
+
+        function abrirCorregirRetiro(id) {
+            const m = motosDemo.find(x => x.id === id);
+            if (!m) return;
+            if (!puedeEditarRetiro(m)) {
+                avisar(m.retiroRegistradoPor
+                    ? 'Solo podés corregir los retiros que registraste vos. Este retiro lo registró ' + m.retiroRegistradoPor + '.'
+                    : 'No hay registro de quién hizo este retiro: solo Administración puede corregirlo.', 'error');
+                return;
+            }
+            retiroModo = 'corregir';
+            retiroChasis = m.chasis;
+            retiroId = m.id;
+            document.getElementById('retiro-titulo').textContent = 'Corregir retiro';
+            document.getElementById('retiro-moto-info').textContent =
+                m.id + ' · ' + m.marca + ' ' + m.modelo + ' — Chasis: ' + m.chasis + ' · Retirada el ' + formatearFechaCorta(m.fechaRetiro);
+            document.getElementById('retiro-ayuda').style.display = 'none';
+            document.getElementById('retiro-tipo-select').value = m.tipoRetiro || '';
+            document.getElementById('retiro-nombre-input').value = m.retiradaPor || '';
+            document.getElementById('retiro-fecha-grupo').style.display = 'none';
+            document.getElementById('retiro-guardar-btn').textContent = '💾 Guardar';
+            actualizarTextosRetiro();
+            document.getElementById('retiroModal').classList.add('active');
+            document.getElementById('retiro-nombre-input').focus();
+        }
+
+        async function confirmarRetiro() {
+            const tipo = document.getElementById('retiro-tipo-select').value;
+            const nombre = document.getElementById('retiro-nombre-input').value.replace(/\s+/g, ' ').trim();
+            const fecha = document.getElementById('retiro-fecha-input').value;
+            const corrigiendo = retiroModo === 'corregir';
+
+            if (!tipo) { avisar('Indicá quién retira la moto: la marca u otro concesionario.', 'error'); return; }
+            if (!nombre) { avisar('Escribí el nombre de quien retira la moto.', 'error'); return; }
+            if (!corrigiendo && !fecha) { avisar('Falta la fecha de retiro.', 'error'); return; }
+
+            const boton = document.getElementById('retiro-guardar-btn');
+            const textoOriginal = boton.textContent;
+            boton.textContent = 'Guardando...';
+            boton.disabled = true;
+            try {
+                if (corrigiendo) {
+                    await apiPost('corregirRetiro', { id: retiroId, tipo, nombre }, { textoBloqueo: 'Guardando…' });
+                    closeModal('retiroModal');
+                    avisar('Retiro corregido: ' + etiquetaTipoRetiro(tipo) + ' — ' + nombre + '. Quedó registrado lo anterior.', 'ok');
+                } else {
+                    await apiPost('retirarMoto', { chasis: retiroChasis, tipo, nombre, fecha }, { textoBloqueo: 'Registrando retiro…' });
+                    closeModal('retiroModal');
+                    avisar('Retiro registrado: chasis ' + retiroChasis + ' retirada por ' + etiquetaTipoRetiro(tipo).toLowerCase() + ' (' + nombre + '). Ya aparece en el Histórico, pestaña Retiradas.', 'ok');
+                }
+            } catch (err) {
+                avisar('No se pudo ' + (corrigiendo ? 'corregir' : 'registrar') + ' el retiro: ' + err.message, 'error');
+            } finally {
+                boton.textContent = textoOriginal;
+                boton.disabled = false;
             }
         }
 
@@ -3704,12 +3952,34 @@
             if (tabla && tabla.scrollIntoView) tabla.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
 
+        let historicoVista = 'vendidas'; // pestaña abierta del Histórico: 'vendidas' o 'retiradas'
+
         function renderHistorico() {
             const vendidas = motosDemo.filter(m => m.disponibilidad === 'Vendida');
+            const retiradas = motosDemo.filter(m => m.disponibilidad === 'Retirada');
 
             // Más recientes primero
             const ordenadas = [...vendidas].sort((a, b) => String(b.fechaVenta || '').localeCompare(String(a.fechaVenta || '')));
             renderPaginado('historico', 'historico-table', ordenadas, filaHistoricoHTML, 9, 'Todavía no hay unidades vendidas.');
+            const ordenadasRet = [...retiradas].sort((a, b) => String(b.fechaRetiro || '').localeCompare(String(a.fechaRetiro || '')));
+            renderPaginado('historicoRetiradas', 'historico-retiradas-table', ordenadasRet, filaRetiradaHTML, 9, 'Todavía no hay unidades retiradas.');
+
+            document.getElementById('hist-n-vendidas').textContent = '(' + vendidas.length + ')';
+            document.getElementById('hist-n-retiradas').textContent = '(' + retiradas.length + ')';
+            verHistorico(historicoVista);
+        }
+
+        // Cambia entre las pestañas Vendidas / Retiradas del Histórico.
+        function verHistorico(vista) {
+            historicoVista = vista === 'retiradas' ? 'retiradas' : 'vendidas';
+            const ret = historicoVista === 'retiradas';
+            document.getElementById('historico-vendidas').style.display = ret ? 'none' : '';
+            document.getElementById('historico-retiradas').style.display = ret ? '' : 'none';
+            const tv = document.getElementById('tab-hist-vendidas'), tr = document.getElementById('tab-hist-retiradas');
+            tv.className = 'btn ' + (ret ? 'btn-secondary' : 'btn-primary');
+            tr.className = 'btn ' + (ret ? 'btn-primary' : 'btn-secondary');
+            tv.setAttribute('aria-selected', String(!ret));
+            tr.setAttribute('aria-selected', String(ret));
         }
 
         // ===================================================================
@@ -4485,17 +4755,17 @@
         // El "color de fábrica" es libre (ej. "Rojo Perla Metálico").
         // IMPORTANTE: debe ser IGUAL a la lista de Code.gs.
         const COLORES_PRIMARIOS = [
-            'Amarillo', 'Azul', 'Beige', 'Blanco', 'Café', 'Celeste', 'Dorado', 'Gris',
-            'Morado', 'Naranja', 'Negro', 'Plateado', 'Rojo', 'Rosado', 'Verde', 'Vino'
+            'AMARILLO', 'AZUL', 'BEIGE', 'BLANCO', 'CAFÉ', 'CELESTE', 'DORADO', 'GRIS',
+            'MORADO', 'NARANJA', 'NEGRO', 'PLATEADO', 'ROJO', 'ROSADO', 'VERDE', 'VINO'
         ];
         const SINONIMOS_COLOR = {
-            negra: 'Negro', black: 'Negro', blanca: 'Blanco', white: 'Blanco',
-            gray: 'Gris', grey: 'Gris', grafito: 'Gris', plata: 'Plateado', plateada: 'Plateado', silver: 'Plateado',
-            roja: 'Rojo', red: 'Rojo', blue: 'Azul', green: 'Verde', amarilla: 'Amarillo', yellow: 'Amarillo',
-            anaranjado: 'Naranja', anaranjada: 'Naranja', orange: 'Naranja', marron: 'Café', brown: 'Café',
-            morada: 'Morado', violeta: 'Morado', purpura: 'Morado', purple: 'Morado',
-            rosada: 'Rosado', rosa: 'Rosado', pink: 'Rosado', dorada: 'Dorado', oro: 'Dorado', gold: 'Dorado',
-            vinotinto: 'Vino', guinda: 'Vino', borgona: 'Vino', crema: 'Beige'
+            negra: 'NEGRO', black: 'NEGRO', blanca: 'BLANCO', white: 'BLANCO',
+            gray: 'GRIS', grey: 'GRIS', grafito: 'GRIS', plata: 'PLATEADO', plateada: 'PLATEADO', silver: 'PLATEADO',
+            roja: 'ROJO', red: 'ROJO', blue: 'AZUL', green: 'VERDE', amarilla: 'AMARILLO', yellow: 'AMARILLO',
+            anaranjado: 'NARANJA', anaranjada: 'NARANJA', orange: 'NARANJA', marron: 'CAFÉ', brown: 'CAFÉ',
+            morada: 'MORADO', violeta: 'MORADO', purpura: 'MORADO', purple: 'MORADO',
+            rosada: 'ROSADO', rosa: 'ROSADO', pink: 'ROSADO', dorada: 'DORADO', oro: 'DORADO', gold: 'DORADO',
+            vinotinto: 'VINO', guinda: 'VINO', borgona: 'VINO', crema: 'BEIGE'
         };
         const COLOR_POR_CLAVE = Object.assign({}, SINONIMOS_COLOR);
         COLORES_PRIMARIOS.forEach(c => { COLOR_POR_CLAVE[claveTexto(c)] = c; });
@@ -4515,31 +4785,175 @@
             return encontrados.size === 1 ? [...encontrados][0] : '';
         }
 
+        // Color de muestra de cada opción (solo decorativo, ayuda a encontrarlo rápido).
+        const COLOR_HEX = {
+            'AMARILLO': '#facc15', 'AZUL': '#2563eb', 'BEIGE': '#e8d9b5', 'BLANCO': '#ffffff', 'CAFÉ': '#6f4e37',
+            'CELESTE': '#7dd3fc', 'DORADO': '#d4af37', 'GRIS': '#9ca3af', 'MORADO': '#7c3aed', 'NARANJA': '#f97316',
+            'NEGRO': '#111827', 'PLATEADO': '#c0c4cc', 'ROJO': '#dc2626', 'ROSADO': '#f9a8d4', 'VERDE': '#16a34a', 'VINO': '#7f1d1d'
+        };
+
+        // Campos de color con opciones al escribir. "extra" son opciones que no
+        // son un color (el filtro puede buscar las motos "SIN ASIGNAR").
+        const CAMPOS_COLOR = {
+            'color-primario-input': { extra: [], alElegir: null },
+            'filtro-color': { extra: ['SIN ASIGNAR'], alElegir: () => filtrarInventario() }
+        };
+        const estadoColor = {}; // id del campo → { opciones, activa }
+
+        // "ro" → ROJO, ROSADO (primero los que empiezan así, luego los que lo
+        // contienen: "ul" → AZUL). También entiende sinónimos ("plata" → PLATEADO).
+        function opcionesColor(texto, extra) {
+            const todas = COLORES_PRIMARIOS.concat(extra || []);
+            const k = claveTexto(texto);
+            if (!k) return todas;
+            const empieza = todas.filter(c => claveTexto(c).startsWith(k));
+            const contiene = todas.filter(c => !claveTexto(c).startsWith(k) && claveTexto(c).includes(k));
+            const lista = empieza.concat(contiene);
+            const sinonimo = normalizarColorPrimario(texto);
+            if (sinonimo && !lista.includes(sinonimo)) lista.unshift(sinonimo);
+            return lista;
+        }
+
         function llenarListasColores() {
-            const select = document.getElementById('color-primario-select');
-            if (select) {
-                select.innerHTML = '<option value="">Seleccionar color primario</option>' +
-                    COLORES_PRIMARIOS.map(c => `<option value="${c}">${c}</option>`).join('');
+            // Nada que llenar a mano: las opciones se arman al escribir.
+            Object.keys(CAMPOS_COLOR).forEach(id => { estadoColor[id] = { opciones: [], activa: -1 }; });
+        }
+
+        // Todo lo que se escribe en estos campos queda en MAYÚSCULAS.
+        function escribirColor(id) {
+            const el = document.getElementById(id);
+            const pos = el.selectionStart;
+            const mayus = el.value.toUpperCase();
+            if (mayus !== el.value) {
+                el.value = mayus;
+                try { el.setSelectionRange(pos, pos); } catch (e) { /* algunos navegadores no lo permiten */ }
             }
-            const lista = document.getElementById('lista-colores-primarios');
-            if (lista) {
-                lista.innerHTML = COLORES_PRIMARIOS.map(c => `<option value="${c}"></option>`).join('') +
-                    '<option value="Sin asignar"></option>';
+            if (id === 'color-primario-input') {
+                // Escrito a mano: la sugerencia automática ya no lo cambia. Vacío: vuelve a sugerir.
+                el.dataset.auto = el.value ? '0' : '1';
+                marcarColorPrimarioInvalido(false);
             }
+            abrirOpcionesColor(id);
+        }
+
+        function abrirOpcionesColor(id) {
+            const el = document.getElementById(id);
+            const cont = document.getElementById(id + '-opciones');
+            if (!el || !cont) return;
+            const extra = CAMPOS_COLOR[id].extra;
+            const texto = el.value.trim();
+            let opciones = opcionesColor(texto, extra);
+            // Si lo escrito ya es exactamente un color, no hace falta seguir mostrando la lista.
+            if (texto && opciones.length === 1 && opciones[0] === texto) opciones = [];
+            const st = estadoColor[id] || (estadoColor[id] = { opciones: [], activa: -1 });
+            st.opciones = opciones;
+            st.activa = texto && opciones.length ? 0 : -1;
+            if (!opciones.length) {
+                if (texto && !opcionesColor(texto, extra).length) {
+                    cont.innerHTML = '<div class="opcion-moto-nota">Ningún color coincide con "' + escaparHTML(texto) + '".</div>';
+                    cont.style.display = 'block';
+                    el.setAttribute('aria-expanded', 'true');
+                } else {
+                    cerrarOpcionesColor(id);
+                }
+                return;
+            }
+            cont.innerHTML = opciones.map((c, i) => `
+                <div class="opcion-moto opcion-color${i === st.activa ? ' activa' : ''}" role="option" id="${id}-op-${i}" data-i="${i}" aria-selected="${i === st.activa}">
+                    <span class="punto-color${COLOR_HEX[c] ? '' : ' sin'}" aria-hidden="true"${COLOR_HEX[c] ? ` style="background:${COLOR_HEX[c]}"` : ''}></span>
+                    <span>${resaltar(c, texto ? [texto] : [])}</span>
+                </div>`).join('');
+            cont.style.display = 'block';
+            el.setAttribute('aria-expanded', 'true');
+            // En el formulario (largo) la lista puede quedar bajo el borde: se acerca a la vista.
+            if (id === 'color-primario-input') cont.scrollIntoView({ block: 'nearest' });
+            cont.querySelectorAll('.opcion-color').forEach(op => {
+                // mousedown (antes del blur del campo) para que el toque siempre elija.
+                op.addEventListener('mousedown', e => { e.preventDefault(); elegirColor(id, st.opciones[Number(op.dataset.i)]); });
+            });
+        }
+
+        function teclaColor(e, id) {
+            const cont = document.getElementById(id + '-opciones');
+            const st = estadoColor[id] || { opciones: [], activa: -1 };
+            const abierta = cont.style.display !== 'none' && st.opciones.length;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!abierta) { abrirOpcionesColor(id); return; }
+                const n = st.opciones.length;
+                st.activa = e.key === 'ArrowDown' ? (st.activa + 1) % n : (st.activa - 1 + n) % n;
+                cont.querySelectorAll('.opcion-color').forEach((op, i) => {
+                    op.classList.toggle('activa', i === st.activa);
+                    op.setAttribute('aria-selected', String(i === st.activa));
+                });
+                const activa = document.getElementById(id + '-op-' + st.activa);
+                if (activa) activa.scrollIntoView({ block: 'nearest' });
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (abierta && st.activa >= 0) elegirColor(id, st.opciones[st.activa]);
+                else if (abierta && st.opciones.length === 1) elegirColor(id, st.opciones[0]);
+            } else if (e.key === 'Escape') {
+                if (abierta) { e.preventDefault(); e.stopPropagation(); cerrarOpcionesColor(id); }
+            }
+        }
+
+        function cerrarOpcionesColor(id) {
+            const cont = document.getElementById(id + '-opciones');
+            const el = document.getElementById(id);
+            if (cont) { cont.style.display = 'none'; cont.innerHTML = ''; }
+            if (el) el.setAttribute('aria-expanded', 'false');
+            if (estadoColor[id]) { estadoColor[id].opciones = []; estadoColor[id].activa = -1; }
+        }
+
+        function elegirColor(id, valor) {
+            if (!valor) return;
+            const el = document.getElementById(id);
+            el.value = valor;
+            if (id === 'color-primario-input') {
+                el.dataset.auto = '0';
+                marcarColorPrimarioInvalido(false);
+            }
+            cerrarOpcionesColor(id);
+            const alElegir = CAMPOS_COLOR[id].alElegir;
+            if (alElegir) alElegir();
+        }
+
+        // Al salir del campo: se cierra la lista y, en el formulario, lo escrito
+        // se acomoda al nombre oficial ("roja" → ROJO) o se marca como inválido.
+        function alSalirColor(id) {
+            setTimeout(() => cerrarOpcionesColor(id), 150);
+            if (id !== 'color-primario-input') return;
+            const el = document.getElementById(id);
+            const texto = el.value.trim();
+            const valor = normalizarColorPrimario(texto);
+            if (valor) el.value = valor;
+            // Solo el borde rojo: un texto nuevo movería el botón Guardar justo cuando se lo toca.
+            marcarColorPrimarioInvalido(!!texto && !valor, false);
+        }
+
+        function marcarColorPrimarioInvalido(invalido, conTexto) {
+            document.getElementById('color-primario-input').classList.toggle('campo-invalido', invalido);
+            document.getElementById('color-primario-error').style.display = invalido && conTexto ? 'block' : 'none';
+        }
+
+        // Color primario del formulario: el nombre oficial, o '' si está vacío o no es de la lista.
+        function valorColorPrimario() {
+            return normalizarColorPrimario(document.getElementById('color-primario-input').value);
+        }
+
+        function ponerColorPrimario(valor, automatico) {
+            const el = document.getElementById('color-primario-input');
+            el.value = valor || '';
+            el.dataset.auto = automatico ? '1' : '0';
+            marcarColorPrimarioInvalido(false);
         }
 
         // Al escribir el color de fábrica se sugiere el primario, salvo que
         // la persona ya lo haya elegido a mano.
         function sugerirColorPrimario() {
-            const select = document.getElementById('color-primario-select');
-            if (select.value && select.dataset.auto !== '1') return;
-            const deducido = deducirColorPrimario(document.getElementById('color-input').value);
-            select.value = deducido;
-            select.dataset.auto = '1';
-        }
-
-        function elegirColorPrimarioAMano() {
-            document.getElementById('color-primario-select').dataset.auto = '0';
+            const el = document.getElementById('color-primario-input');
+            if (el.value && el.dataset.auto !== '1') return;
+            ponerColorPrimario(deducirColorPrimario(document.getElementById('color-input').value), true);
         }
 
         function updateModelos() {
@@ -4698,9 +5112,7 @@
             updateModelos();
             document.getElementById('anio-input').value = '';
             document.getElementById('color-input').value = '';
-            const selColor = document.getElementById('color-primario-select');
-            selColor.value = '';
-            selColor.dataset.auto = '1';
+            ponerColorPrimario('', true);
             document.getElementById('chasis-input').value = '';
             document.getElementById('motor-input').value = '';
             document.getElementById('poliza-input').value = '';
@@ -4798,14 +5210,12 @@
             document.getElementById('modelo-select').value = modeloCat;
             document.getElementById('anio-input').value = m.anio || '';
             document.getElementById('color-input').value = m.color || '';
-            const selColor = document.getElementById('color-primario-select');
             const primarioGuardado = normalizarColorPrimario(m.colorPrimario);
-            selColor.value = primarioGuardado || deducirColorPrimario(m.color);
-            selColor.dataset.auto = primarioGuardado ? '0' : '1';
+            ponerColorPrimario(primarioGuardado || deducirColorPrimario(m.color), !primarioGuardado);
             const fueraDeCatalogo = [];
             if (!marcaCat) fueraDeCatalogo.push('la marca "' + m.marca + '"');
             else if (!modeloCat) fueraDeCatalogo.push('el modelo "' + m.modelo + '" de ' + marcaCat);
-            if (!selColor.value) fueraDeCatalogo.push('el color primario');
+            if (!valorColorPrimario()) fueraDeCatalogo.push('el color primario');
             document.getElementById('chasis-input').value = m.chasis || '';
             document.getElementById('motor-input').value = m.motor || '';
             document.getElementById('poliza-input').value = m.poliza || '';
@@ -4877,7 +5287,7 @@
                 modelo: document.getElementById('modelo-select').value,
                 anio: document.getElementById('anio-input').value.trim(),
                 color: document.getElementById('color-input').value.trim(),
-                colorPrimario: document.getElementById('color-primario-select').value,
+                colorPrimario: valorColorPrimario(),
                 chasis: document.getElementById('chasis-input').value.trim().toUpperCase(),
                 motor: document.getElementById('motor-input').value.trim(),
                 poliza: document.getElementById('poliza-input').value.trim(),
@@ -4889,7 +5299,15 @@
                 casco: document.getElementById('casco-select').value
             };
 
-            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'motor', 'poliza', 'precio', 'sucursal', 'estadoVenta', 'condicion', 'casco'];
+            const textoColor = document.getElementById('color-primario-input').value.trim();
+            if (textoColor && !moto.colorPrimario) {
+                marcarColorPrimarioInvalido(true, true);
+                document.getElementById('color-primario-input').focus();
+                avisar('El color primario "' + textoColor + '" no está en la lista. Escribí unas letras y elegí una de las opciones (NEGRO, AZUL, BLANCO…).', 'error');
+                return;
+            }
+
+            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'motor', 'precio', 'sucursal', 'estadoVenta', 'condicion', 'casco'];
             const faltantes = obligatorios.filter(campo => !moto[campo]);
             if (faltantes.length > 0) {
                 avisar('Por favor completa todos los campos obligatorios (*).', 'error');
@@ -5012,7 +5430,10 @@
         }
 
         // ===== Exportar a Excel =====
-        function construirHojaDesdeMotos(motos, incluirVenta) {
+        // "incluir": false (solo inventario), true o 'venta' (datos de la venta) o 'retiro' (datos del retiro).
+        function construirHojaDesdeMotos(motos, incluir) {
+            const incluirVenta = incluir === true || incluir === 'venta';
+            const incluirRetiro = incluir === 'retiro';
             const filas = motos.map(m => {
                 const base = {
                     'ID': m.id,
@@ -5039,6 +5460,12 @@
                     base['Cliente'] = m.cliente || '';
                     base['Fecha Venta'] = m.fechaVenta || '';
                     base['Registrada por'] = m.vendidoPor || '';
+                }
+                if (incluirRetiro) {
+                    base['Retira'] = etiquetaTipoRetiro(m.tipoRetiro);
+                    base['Nombre de quien retira'] = m.retiradaPor || '';
+                    base['Fecha de retiro'] = m.fechaRetiro || '';
+                    base['Registrado por'] = m.retiroRegistradoPor || '';
                 }
                 return base;
             });
@@ -5087,6 +5514,20 @@
         }
 
         async function exportarHistorico() {
+            if (historicoVista === 'retiradas') {
+                const retiradas = motosDemo.filter(m => m.disponibilidad === 'Retirada');
+                if (retiradas.length === 0) {
+                    avisar('Todavía no hay unidades retiradas para exportar.', 'error');
+                    return;
+                }
+                try {
+                    await prepararExcel();
+                    descargarLibro(construirHojaDesdeMotos(retiradas, 'retiro'), 'Retiradas', 'Retiradas_MotoSivar_' + hoyLocal() + '.xlsx');
+                } catch (err) {
+                    avisar('No se pudo exportar: ' + err.message, 'error');
+                }
+                return;
+            }
             const vendidas = motosDemo.filter(m => m.disponibilidad === 'Vendida');
             if (vendidas.length === 0) {
                 avisar('Todavía no hay unidades vendidas para exportar.', 'error');
@@ -5112,11 +5553,13 @@
 
             let datos = tipo === 'Movimientos'
                 ? motosDemo.filter(m => m.disponibilidad === 'Vendida')
-                : motosDemo.filter(enInventario);
+                : tipo === 'Retiradas'
+                    ? motosDemo.filter(m => m.disponibilidad === 'Retirada')
+                    : motosDemo.filter(enInventario);
 
             if (sucursal) datos = datos.filter(m => m.sucursal === sucursal);
 
-            const campoFecha = tipo === 'Movimientos' ? 'fechaVenta' : 'fecha';
+            const campoFecha = tipo === 'Movimientos' ? 'fechaVenta' : tipo === 'Retiradas' ? 'fechaRetiro' : 'fecha';
             if (desde) datos = datos.filter(m => m[campoFecha] && m[campoFecha] >= desde);
             if (hasta) datos = datos.filter(m => m[campoFecha] && m[campoFecha] <= hasta);
 
@@ -5127,7 +5570,7 @@
 
             try {
                 await prepararExcel();
-                const hoja = construirHojaDesdeMotos(datos, tipo === 'Movimientos');
+                const hoja = construirHojaDesdeMotos(datos, tipo === 'Movimientos' ? 'venta' : tipo === 'Retiradas' ? 'retiro' : false);
                 descargarLibro(hoja, tipo, 'Reporte_' + tipo.replace(/\s+/g, '_') + '_' + hoyLocal() + '.xlsx');
             } catch (err) {
                 avisar('No se pudo generar el reporte: ' + err.message, 'error');
@@ -5169,7 +5612,7 @@
                 return;
             }
             const sucursalEjemplo = sesionActual && sesionActual.rol !== 'admin' && sesionActual.sucursal ? sesionActual.sucursal : 'Gabriela Mistral';
-            const filaEjemplo = ['2025-01-15', 'HONDA', 'CB160R', '2025', 'Negro Mate', 'Negro', 'LRSYCMLE4V0E68735', '163FML004598C7', '4-14234', 1850, 1400, sucursalEjemplo, 'Consignada', 'Óptimas condiciones', 'Sí'];
+            const filaEjemplo = ['2025-01-15', 'HONDA', 'CB160R', '2025', 'Negro Mate', 'NEGRO', 'LRSYCMLE4V0E68735', '163FML004598C7', '4-14234', 1850, 1400, sucursalEjemplo, 'Consignada', 'Óptimas condiciones', 'Sí'];
 
             const hoja = XLSX.utils.aoa_to_sheet([ENCABEZADOS_PLANTILLA, filaEjemplo]);
             const libro = XLSX.utils.book_new();
@@ -5337,7 +5780,7 @@
                     errores.push('Falta el chasis.');
                 } else if (chasisSistema[kChasis]) {
                     const existente = chasisSistema[kChasis];
-                    errores.push('El chasis ' + chasis + ' ya está registrado en el sistema (' + existente.id + ', ' + existente.sucursal + (existente.disponibilidad === 'Vendida' ? ', vendida' : '') + ').');
+                    errores.push('El chasis ' + chasis + ' ya está registrado en el sistema (' + existente.id + ', ' + existente.sucursal + (existente.disponibilidad === 'Vendida' ? ', vendida' : existente.disponibilidad === 'Retirada' ? ', retirada' : '') + ').');
                 } else if (chasisArchivo[kChasis]) {
                     errores.push('El chasis ' + chasis + ' está repetido en el archivo (también en la fila ' + chasisArchivo[kChasis] + ').');
                 } else {
