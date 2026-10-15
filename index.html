@@ -1265,6 +1265,31 @@
             opacity: 0.45;
         }
 
+
+        /* Participación por color primario */
+        .card-colores { margin-top: 20px; }
+        .card-colores h2 { font-size: 18px; color: var(--navy-900); margin-bottom: 4px; }
+        .colores-controles { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin: 14px 0 4px; }
+        .colores-controles .form-group { margin-bottom: 0; min-width: 240px; flex: 0 1 380px; }
+        .colores-controles .btn { padding: 9px 14px; }
+        .colores-cuerpo { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 28px; align-items: center; margin-top: 8px; }
+        .colores-cuerpo .donut-wrap { margin-top: 0; }
+        .colores-lista { list-style: none; }
+        .colores-lista li { display: grid; grid-template-columns: minmax(110px, 150px) 1fr auto; gap: 12px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--navy-50); font-size: 13px; }
+        .colores-lista .nombre { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink); }
+        .colores-lista .punto { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(15,41,66,0.25); flex: none; }
+        .colores-lista .barra { height: 8px; background: var(--navy-50); border-radius: 4px; overflow: hidden; }
+        .colores-lista .barra i { display: block; height: 100%; border-radius: 4px; border: 1px solid rgba(15,41,66,0.25); box-sizing: border-box; }
+        .colores-lista .cifra { color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+        .colores-lista .cifra strong { color: var(--ink); }
+        .colores-lista li.sin-asignar .nombre { color: var(--ink-muted); font-weight: 500; }
+        .colores-resumen { margin-top: 10px; font-size: 13px; color: var(--ink); }
+        @media (max-width: 760px) {
+            .colores-cuerpo { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+            .colores-lista li { grid-template-columns: minmax(96px, 120px) 1fr auto; gap: 8px; }
+            .colores-controles .form-group { flex: 1 1 100%; }
+        }
+
         .barras-suc {
             display: flex;
             flex-direction: column;
@@ -1514,6 +1539,19 @@
             color: var(--ink-muted);
         }
 
+        /* Reversión de ventas */
+        .reversiones-panel { margin-bottom: 22px; border: 1px solid #f3c98b; background: #fff8ec; border-radius: 10px; padding: 14px 16px; }
+        .reversiones-panel h3 { font-size: 15px; color: #8a4b00; margin-bottom: 2px; }
+        .reversion-item { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: space-between; align-items: flex-start; padding: 12px 0; border-top: 1px solid #f3dfbd; }
+        .reversion-item:first-of-type { border-top: 0; }
+        .reversion-info { flex: 1 1 320px; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
+        .reversion-info .motivo { background: #ffffff; border: 1px solid #f3dfbd; border-radius: 6px; padding: 6px 10px; margin-top: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .reversion-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+        .reversion-botones .btn { padding: 7px 12px; font-size: 12.5px; }
+        .acciones-venta { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+        .badge-reversion { display: inline-block; background: #fff1d6; color: #8a4b00; border: 1px solid #f3c98b; border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .reversion-rechazo { font-size: 11.5px; color: #a12622; line-height: 1.35; max-width: 220px; }
+        #reversion-motivo-input { width: 100%; min-height: 92px; resize: vertical; font-family: inherit; }
         .menu-insignia {
             display: inline-block;
             min-width: 20px;
@@ -1621,7 +1659,7 @@
                     <a class="menu-link" onclick="switchSection('reportes')">📈 Reportes</a>
                 </li>
                 <li class="menu-item">
-                    <a class="menu-link" onclick="switchSection('historico')">🗂️ Histórico</a>
+                    <a class="menu-link" onclick="switchSection('historico')">🗂️ Histórico <span class="menu-insignia" id="menu-historico-insignia" style="display:none;">0</span></a>
                 </li>
             </ul>
         </aside>
@@ -1721,6 +1759,25 @@
                                 <h2>Por sucursal</h2>
                                 <p class="card-ayuda" id="barras-ayuda">Motos en inventario. Tocá una sucursal para filtrar.</p>
                                 <div class="barras-suc" id="barras-sucursal"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-colores" id="card-colores">
+                        <h2>Participación por color primario</h2>
+                        <p class="card-ayuda" id="colores-ayuda">Sobre el inventario (sin vendidas ni retiradas)</p>
+                        <div class="colores-controles">
+                            <div class="form-group">
+                                <label for="colores-modelo-select">Ver los colores de un modelo</label>
+                                <select id="colores-modelo-select" onchange="elegirModeloColores(this.value)"></select>
+                            </div>
+                            <button class="btn btn-secondary" type="button" id="colores-quitar-modelo" style="display:none;" onclick="elegirModeloColores('')">✕ Todos los modelos</button>
+                        </div>
+                        <div class="colores-cuerpo">
+                            <div class="donut-wrap" id="colores-dona"></div>
+                            <div>
+                                <ul class="colores-lista" id="colores-lista"></ul>
+                                <p class="colores-resumen" id="colores-resumen"></p>
                             </div>
                         </div>
                     </div>
@@ -1983,6 +2040,7 @@
                             </div>
                             <button class="btn btn-secondary" onclick="exportarHistorico()">📥 Exportar Histórico</button>
                         </div>
+                        <div class="reversiones-panel" id="reversiones-panel" style="display:none;"></div>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -2194,8 +2252,8 @@
                     <input type="text" id="chasis-input" placeholder="Ej: LRSYCMLE4V0E68735" required>
                 </div>
                 <div class="form-group">
-                    <label>Número de Motor *</label>
-                    <input type="text" id="motor-input" placeholder="Ej: 163FML004598C7" required>
+                    <label>Número de Motor <span style="font-weight: 400; color: #5b6675;">(opcional)</span></label>
+                    <input type="text" id="motor-input" placeholder="Ej: 163FML004598C7">
                 </div>
             </div>
 
@@ -2385,6 +2443,27 @@
             <div style="display: flex; gap: 10px; margin-top: 30px;">
                 <button class="btn btn-primary" id="retiro-guardar-btn" onclick="confirmarRetiro()">📤 Confirmar retiro</button>
                 <button class="btn btn-secondary" onclick="closeModal('retiroModal')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Reversión de una venta -->
+    <div id="reversionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="reversion-titulo">Revertir venta</h2>
+                <button class="modal-close" onclick="closeModal('reversionModal')">×</button>
+            </div>
+            <p id="reversion-moto-info" style="font-size: 13px; color: var(--ink-muted); margin-bottom: 8px;"></p>
+            <p id="reversion-ayuda" class="card-ayuda" style="margin-bottom: 18px;"></p>
+            <div class="form-group">
+                <label for="reversion-motivo-input" id="reversion-motivo-label">Motivo *</label>
+                <textarea id="reversion-motivo-input" maxlength="300" placeholder="" oninput="actualizarContadorReversion()"></textarea>
+                <div class="aprob-detalle" id="reversion-contador" style="text-align:right;">0 / 300</div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 24px;">
+                <button class="btn btn-primary" id="reversion-guardar-btn" onclick="confirmarReversion()">Enviar</button>
+                <button class="btn btn-secondary" onclick="closeModal('reversionModal')">Cancelar</button>
             </div>
         </div>
     </div>
@@ -2846,7 +2925,11 @@
                 tipoRetiro: String(fila.TipoRetiro == null ? '' : fila.TipoRetiro),
                 retiradaPor: String(fila.RetiradaPor == null ? '' : fila.RetiradaPor),
                 fechaRetiro: fila.FechaRetiro || '',
-                retiroRegistradoPor: String(fila.RetiroRegistradoPor == null ? '' : fila.RetiroRegistradoPor)
+                retiroRegistradoPor: String(fila.RetiroRegistradoPor == null ? '' : fila.RetiroRegistradoPor),
+                reversionSolicitadaPor: String(fila.ReversionSolicitadaPor == null ? '' : fila.ReversionSolicitadaPor),
+                reversionMotivo: String(fila.ReversionMotivo == null ? '' : fila.ReversionMotivo),
+                reversionFecha: String(fila.ReversionFecha == null ? '' : fila.ReversionFecha),
+                reversionRechazo: String(fila.ReversionRechazo == null ? '' : fila.ReversionRechazo)
             };
         }
 
@@ -3094,6 +3177,7 @@
 
         // Filtros activos del Inicio (vacío = todas)
         const filtrosInicio = { sucursales: new Set(), marcas: new Set() };
+        let modeloColores = '';   // '' = todos; si no, 'MARCA\u0001MODELO' (solo afecta al gráfico de colores)
 
         function alternarFiltroInicio(tipo, valor) {
             const conjunto = filtrosInicio[tipo];
@@ -3259,6 +3343,7 @@
             }
 
             renderBarrasSucursal();
+            renderColores();
         }
 
         function renderDesglose(grupos, colores, nivel, total, prospectadas, facturadas) {
@@ -3268,7 +3353,7 @@
                 ? 'Modelos de ' + selMarca[0]
                 : (selMarca.length ? 'Marcas elegidas' : 'Motos por marca');
             document.getElementById('desglose-ayuda').textContent = porModelo
-                ? 'Unidades en inventario por modelo. Tocá ' + selMarca[0] + ' otra vez (arriba o en el gráfico) para quitar el filtro.'
+                ? 'Unidades en inventario por modelo. Tocá un modelo para ver sus colores abajo, o tocá ' + selMarca[0] + ' otra vez (arriba o en el gráfico) para quitar el filtro.'
                 : 'Tocá una marca para filtrar todo el tablero; tocala otra vez para quitarla.';
 
             document.getElementById('desglose-head').innerHTML = `
@@ -3293,8 +3378,10 @@
             tbody.innerHTML = grupos.map(g => {
                 const elegible = !porModelo;
                 const elegida = elegible && filtrosInicio.marcas.has(g.nombre);
+                const claveMod = porModelo ? selMarca[0] + '\u0001' + g.nombre : '';
+                const modeloElegido = porModelo && modeloColores === claveMod;
                 return `
-                <tr ${elegible ? `class="clickable${elegida ? ' seleccionada' : ''}" data-marca="${escaparHTML(g.nombre)}" title="${elegida ? 'Quitar' : 'Filtrar por'} ${escaparHTML(g.nombre)}"` : ''}>
+                <tr ${elegible ? `class="clickable${elegida ? ' seleccionada' : ''}" data-marca="${escaparHTML(g.nombre)}" title="${elegida ? 'Quitar' : 'Filtrar por'} ${escaparHTML(g.nombre)}"` : `class="clickable${modeloElegido ? ' seleccionada' : ''}" data-modelo="${escaparHTML(claveMod)}" title="Ver los colores de ${escaparHTML(g.nombre)}"`}>
                     <td><span class="swatch" style="background:${colores[g.nombre] || COLOR_OTROS}"></span>${escaparHTML(g.nombre)}</td>
                     <td class="num">${g.total}</td>
                     <td class="num ${g.prospectadas ? 'num-prospectada' : ''}">${g.prospectadas}</td>
@@ -3316,7 +3403,9 @@
 
             tbody.onclick = function (e) {
                 const fila = e.target.closest('tr[data-marca]');
-                if (fila) alternarFiltroInicio('marcas', fila.dataset.marca);
+                if (fila) { alternarFiltroInicio('marcas', fila.dataset.marca); return; }
+                const filaMod = e.target.closest('tr[data-modelo]');
+                if (filaMod) elegirModeloColores(modeloColores === filaMod.dataset.modelo ? '' : filaMod.dataset.modelo);
             };
         }
 
@@ -3418,6 +3507,119 @@
                 const li = e.target.closest('li.clickable');
                 if (li) alternarFiltroInicio('marcas', rebanadas[Number(li.dataset.i)].nombre);
             };
+        }
+
+        // ----- Participación por color primario -----
+        const COLOR_SIN_ASIGNAR = 'SIN ASIGNAR';
+        const claveModelo = m => textoClave(m.marca) + '\u0001' + (textoClave(m.modelo) || '(SIN MODELO)');
+        const nombreModelo = clave => clave.replace('\u0001', ' ');
+
+        function elegirModeloColores(clave) {
+            modeloColores = clave || '';
+            renderColores();
+            // La tabla de modelos marca la fila elegida
+            const filas = document.querySelectorAll('#desglose-body tr[data-modelo]');
+            filas.forEach(f => f.classList.toggle('seleccionada', f.dataset.modelo === modeloColores));
+        }
+
+        function renderColores() {
+            const lista = document.getElementById('colores-lista');
+            if (!lista) return;
+            // Alcance: las sucursales y marcas elegidas arriba
+            const base = motosDemo.filter(m => enInventario(m) && pasaSucursal(m) && pasaMarca(m));
+
+            // Opciones del selector de modelo (solo los que existen en el alcance)
+            const porModelo = {};
+            base.forEach(m => { const k = claveModelo(m); porModelo[k] = (porModelo[k] || 0) + 1; });
+            const claves = Object.keys(porModelo).sort((a, b) => nombreModelo(a).localeCompare(nombreModelo(b)));
+            if (modeloColores && !porModelo[modeloColores]) modeloColores = '';
+            const sel = document.getElementById('colores-modelo-select');
+            sel.innerHTML = '<option value="">Todos los modelos (' + base.length + ')</option>' +
+                claves.map(k => `<option value="${escaparHTML(k)}">${escaparHTML(nombreModelo(k))} (${porModelo[k]})</option>`).join('');
+            sel.value = modeloColores;
+            document.getElementById('colores-quitar-modelo').style.display = modeloColores ? 'inline-flex' : 'none';
+
+            const motos = modeloColores ? base.filter(m => claveModelo(m) === modeloColores) : base;
+            const total = motos.length;
+
+            // Agrupa por color primario normalizado
+            const cuenta = {};
+            motos.forEach(m => {
+                const c = normalizarColorPrimario(m.colorPrimario) || COLOR_SIN_ASIGNAR;
+                cuenta[c] = (cuenta[c] || 0) + 1;
+            });
+            const grupos = Object.keys(cuenta).map(c => ({ nombre: c, total: cuenta[c] }))
+                .sort((a, b) => (a.nombre === COLOR_SIN_ASIGNAR) - (b.nombre === COLOR_SIN_ASIGNAR) || b.total - a.total || a.nombre.localeCompare(b.nombre));
+            const colorDe = c => COLOR_HEX[c] || '#d1d5db';
+
+            const selSuc = [...filtrosInicio.sucursales], selMarca = [...filtrosInicio.marcas];
+            document.getElementById('colores-ayuda').textContent =
+                (modeloColores ? nombreModelo(modeloColores) : (selMarca.length ? 'Marca ' + listaTexto(selMarca) : 'Todas las marcas')) +
+                ' · ' + (selSuc.length ? listaTexto(selSuc) : 'todas las sucursales') + ' · sin vendidas ni retiradas';
+
+            const dona = document.getElementById('colores-dona');
+            if (total === 0) {
+                dona.innerHTML = '<div class="donut-vacio">No hay motos en inventario para graficar.</div>';
+                lista.innerHTML = '';
+                document.getElementById('colores-resumen').textContent = '';
+                return;
+            }
+
+            const cx = 100, cy = 100, rExt = 92, rInt = 58;
+            let svg = '<svg viewBox="0 0 200 200" role="img" aria-label="Participación por color primario">';
+            if (grupos.length === 1) {
+                svg += `<circle cx="${cx}" cy="${cy}" r="${(rExt + rInt) / 2}" fill="none" stroke="${colorDe(grupos[0].nombre)}" stroke-width="${rExt - rInt}" data-i="0"></circle>` +
+                       `<circle cx="${cx}" cy="${cy}" r="${rExt}" fill="none" stroke="rgba(15,41,66,0.25)" stroke-width="1"></circle><circle cx="${cx}" cy="${cy}" r="${rInt}" fill="none" stroke="rgba(15,41,66,0.25)" stroke-width="1"></circle>`;
+            } else {
+                let ang = 0;
+                grupos.forEach((g, i) => {
+                    const fin = ang + (g.total / total) * Math.PI * 2;
+                    svg += `<path d="${arcoDona(cx, cy, rExt, rInt, ang, fin)}" fill="${colorDe(g.nombre)}" stroke="${g.nombre === 'BLANCO' ? '#9aa8b5' : '#ffffff'}" stroke-width="${g.nombre === 'BLANCO' ? 1 : 2}" stroke-linejoin="round" data-i="${i}"></path>`;
+                    ang = fin;
+                });
+            }
+            svg += `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="30" font-weight="700" fill="#0f2942">${total}</text>`;
+            svg += `<text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="11" fill="#62798e">${total === 1 ? 'moto' : 'motos'}</text></svg>`;
+            dona.innerHTML = svg + '<div class="donut-tooltip"></div>';
+
+            const maximo = Math.max(...grupos.map(g => g.total));
+            lista.innerHTML = grupos.map(g => `
+                <li class="${g.nombre === COLOR_SIN_ASIGNAR ? 'sin-asignar' : ''}" data-color="${escaparHTML(g.nombre)}">
+                    <span class="nombre"><span class="punto" style="background:${colorDe(g.nombre)}"></span>${escaparHTML(g.nombre === COLOR_SIN_ASIGNAR ? 'Sin asignar' : g.nombre)}</span>
+                    <span class="barra"><i style="width:${Math.max(3, Math.round(g.total / maximo * 100))}%; background:${colorDe(g.nombre)}"></i></span>
+                    <span class="cifra"><strong>${g.total}</strong> · ${porcentaje(g.total, total)}</span>
+                </li>`).join('');
+
+            const conColor = grupos.filter(g => g.nombre !== COLOR_SIN_ASIGNAR);
+            const sinAsignar = cuenta[COLOR_SIN_ASIGNAR] || 0;
+            let resumen = (modeloColores ? nombreModelo(modeloColores) : 'El inventario filtrado') + ': ' + total + (total === 1 ? ' moto' : ' motos') +
+                ' en ' + conColor.length + (conColor.length === 1 ? ' color' : ' colores');
+            if (conColor.length) resumen += '. El que más pesa es ' + conColor[0].nombre + ' (' + porcentaje(conColor[0].total, total) + ')';
+            if (sinAsignar) resumen += '. ' + sinAsignar + (sinAsignar === 1 ? ' moto no tiene' : ' motos no tienen') + ' color primario asignado';
+            document.getElementById('colores-resumen').textContent = resumen + '.';
+
+            // Tooltip al pasar sobre la dona
+            const tooltip = dona.querySelector('.donut-tooltip');
+            const trozos = dona.querySelectorAll('svg [data-i]');
+            trozos.forEach(el => {
+                const g = grupos[Number(el.dataset.i)];
+                el.addEventListener('pointerenter', () => {
+                    trozos.forEach(o => { o.style.opacity = o === el ? '1' : '0.45'; });
+                    tooltip.innerHTML = `<strong>${escaparHTML(g.nombre === COLOR_SIN_ASIGNAR ? 'Sin asignar' : g.nombre)}</strong><br>${g.total} ${g.total === 1 ? 'moto' : 'motos'} · ${porcentaje(g.total, total)}`;
+                    tooltip.style.display = 'block';
+                });
+                el.addEventListener('pointermove', e => {
+                    const caja = dona.getBoundingClientRect();
+                    let x = e.clientX - caja.left + 12;
+                    if (x + tooltip.offsetWidth > caja.width) x = Math.max(0, caja.width - tooltip.offsetWidth);
+                    tooltip.style.left = x + 'px';
+                    tooltip.style.top = (e.clientY - caja.top + 12) + 'px';
+                });
+                el.addEventListener('pointerleave', () => {
+                    trozos.forEach(o => { o.style.opacity = ''; });
+                    tooltip.style.display = 'none';
+                });
+            });
         }
 
         // Barras por sucursal (se filtran por marca, no por sucursal: muestran
@@ -3572,9 +3774,10 @@
 
         function filaHistoricoHTML(m) {
             const autor = m.vendidoPor && m.vendidoPor !== VENDEDOR_DESCONOCIDO ? m.vendidoPor : 'Sin registro';
-            const accion = puedeEditarVenta(m)
+            const botonCorregir = puedeEditarVenta(m)
                 ? `<button class="btn btn-secondary" style="padding: 5px 9px; font-size: 11.5px; white-space: nowrap;" onclick="abrirEditarVenta('${escaparHTML(m.id)}')">✎ Corregir cliente</button>`
                 : `<span class="aprob-detalle">${m.vendidoPor && m.vendidoPor !== VENDEDOR_DESCONOCIDO ? 'Solo quien la registró' : 'Solo Administración'}</span>`;
+            const accion = `<div class="acciones-venta">${botonCorregir}${accionReversionHTML(m)}</div>`;
             return `
                 <tr>
                     <td style="white-space: nowrap;">${escaparHTML(formatearFechaCorta(m.fechaVenta))}</td>
@@ -3954,6 +4157,188 @@
 
         let historicoVista = 'vendidas'; // pestaña abierta del Histórico: 'vendidas' o 'retiradas'
 
+        // ===================================================================
+        // REVERSIÓN DE VENTAS — el jefe de sucursal la SOLICITA y solo
+        // Administración la aprueba (o la rechaza). Administración también
+        // puede revertir directamente. Al aprobarse, la moto vuelve a
+        // "Disponible" y se borran cliente, fecha de venta y vendedor.
+        // ===================================================================
+        const esAdministracion = () => !!sesionActual && sesionActual.rol === 'admin';
+        const reversionPendiente = m => !!m.reversionSolicitadaPor;
+
+        function puedeCancelarReversion(m) {
+            return !!sesionActual && (esAdministracion() || m.reversionSolicitadaPor === sesionActual.nombreMostrar);
+        }
+
+        // Botón(es) de reversión que van en la fila de la venta.
+        function accionReversionHTML(m) {
+            const estilo = 'padding: 5px 9px; font-size: 11.5px; white-space: nowrap;';
+            const id = escaparHTML(m.id);
+            if (reversionPendiente(m)) {
+                const quien = escaparHTML(m.reversionSolicitadaPor);
+                return `<span class="badge-reversion" title="Pedida por ${quien}">⏳ Reversión pedida</span>` +
+                    (esAdministracion() ? `<span class="aprob-detalle">Resolvela arriba, en "Solicitudes de reversión".</span>` : '');
+            }
+            const rechazo = m.reversionRechazo ? `<span class="reversion-rechazo">✕ ${escaparHTML(m.reversionRechazo)}</span>` : '';
+            if (esAdministracion()) {
+                return `<button class="btn btn-secondary" style="${estilo}" onclick="abrirReversion('${id}', 'directa')" title="Deshacer esta venta (la moto vuelve a Disponible)">↩ Revertir venta</button>${rechazo}`;
+            }
+            if (puedeGestionar(m)) {
+                return `<button class="btn btn-secondary" style="${estilo}" onclick="abrirReversion('${id}', 'solicitar')" title="Pedir a Administración que deshaga esta venta">↩ Pedir reversión</button>${rechazo}`;
+            }
+            return rechazo;
+        }
+
+        // Panel de solicitudes pendientes (arriba de la tabla de vendidas).
+        function renderReversiones() {
+            const panel = document.getElementById('reversiones-panel');
+            if (!panel) return;
+            const pendientes = motosDemo
+                .filter(m => m.disponibilidad === 'Vendida' && reversionPendiente(m))
+                .sort((a, b) => String(a.reversionFecha).localeCompare(String(b.reversionFecha)));
+
+            const insignia = document.getElementById('menu-historico-insignia');
+            if (insignia) {
+                const n = esAdministracion() ? pendientes.length : 0;
+                insignia.textContent = n;
+                insignia.style.display = n ? 'inline-block' : 'none';
+            }
+            if (!pendientes.length) {
+                panel.style.display = 'none';
+                panel.innerHTML = '';
+                return;
+            }
+            panel.style.display = '';
+            panel.innerHTML = `<h3>⏳ Solicitudes de reversión de ventas (${pendientes.length})</h3>
+                <p class="card-ayuda" style="margin-bottom: 4px;">${esAdministracion()
+                    ? 'Si aprobás, la moto vuelve a Disponible y se borran el cliente y la fecha de venta.'
+                    : 'Esperan la aprobación de Administración.'}</p>` +
+                pendientes.map(m => {
+                    const id = escaparHTML(m.id);
+                    const botones = [];
+                    if (esAdministracion()) {
+                        botones.push(`<button class="btn btn-primary" onclick="aprobarReversion('${id}')">✓ Aprobar reversión</button>`);
+                        botones.push(`<button class="btn btn-secondary" onclick="abrirReversion('${id}', 'rechazar')">✕ Rechazar</button>`);
+                    }
+                    if (puedeCancelarReversion(m)) {
+                        botones.push(`<button class="btn btn-secondary" onclick="cancelarReversion('${id}')">Cancelar solicitud</button>`);
+                    }
+                    return `<div class="reversion-item">
+                        <div class="reversion-info">
+                            <strong>${escaparHTML(m.marca)} ${escaparHTML(m.modelo)}</strong> · chasis ${escaparHTML(m.chasis)} · ${escaparHTML(m.sucursal)}<br>
+                            Venta a <strong>${escaparHTML(m.cliente)}</strong> el ${escaparHTML(formatearFechaCorta(m.fechaVenta))}, registrada por ${escaparHTML(m.vendidoPor || 'sin registro')}.<br>
+                            Pedida por <strong>${escaparHTML(m.reversionSolicitadaPor)}</strong> el ${escaparHTML(fechaHoraCorta(m.reversionFecha))}:
+                            <div class="motivo">${escaparHTML(m.reversionMotivo)}</div>
+                        </div>
+                        <div class="reversion-botones">${botones.join('')}</div>
+                    </div>`;
+                }).join('');
+        }
+
+        let reversionModo = 'solicitar';   // 'solicitar' | 'directa' | 'rechazar'
+        let reversionId = null;
+
+        function abrirReversion(id, modo) {
+            const m = motosDemo.find(x => x.id === id);
+            if (!m || m.disponibilidad !== 'Vendida') {
+                avisar('Esa moto ya no figura como vendida. Se actualizó la lista.', 'error');
+                renderHistorico();
+                return;
+            }
+            if (modo === 'rechazar') {
+                if (!esAdministracion()) return;
+            } else if (modo === 'directa') {
+                if (!esAdministracion()) { avisar('Solo Administración puede revertir directamente.', 'error'); return; }
+            } else {
+                if (!verificarPuedeGestionar(m, 'pedir la reversión de ventas de')) return;
+                if (reversionPendiente(m)) { avisar('Ya hay una solicitud pendiente para esta moto.', 'error'); return; }
+            }
+            reversionModo = modo;
+            reversionId = id;
+            const textos = {
+                solicitar: ['Pedir reversión de venta', 'Administración recibirá tu solicitud y la moto seguirá como vendida hasta que la apruebe.', 'Motivo de la reversión *', 'Ej: Se registró con el cliente equivocado / la venta se cayó', 'Enviar solicitud'],
+                directa: ['Revertir venta', 'La moto vuelve a Disponible en su sucursal y se borran el cliente, la fecha y quién registró la venta. Todo queda en el registro de actividad.', 'Motivo de la reversión *', 'Ej: Venta cargada dos veces', '↩ Revertir venta'],
+                rechazar: ['Rechazar reversión', 'La moto sigue como vendida. Quien la pidió verá que fue rechazada.', 'Nota para quien la pidió (opcional)', 'Ej: Falta el respaldo de la anulación', '✕ Rechazar solicitud']
+            }[modo];
+            document.getElementById('reversion-titulo').textContent = textos[0];
+            document.getElementById('reversion-moto-info').textContent = m.marca + ' ' + m.modelo + ' — Chasis: ' + m.chasis + ' · vendida a ' + m.cliente + ' (' + formatearFechaCorta(m.fechaVenta) + ')' +
+                (modo === 'rechazar' ? ' · pedida por ' + m.reversionSolicitadaPor + ': ' + m.reversionMotivo : '');
+            document.getElementById('reversion-ayuda').textContent = textos[1];
+            document.getElementById('reversion-motivo-label').textContent = textos[2];
+            const campo = document.getElementById('reversion-motivo-input');
+            campo.placeholder = textos[3];
+            campo.value = '';
+            document.getElementById('reversion-guardar-btn').textContent = textos[4];
+            actualizarContadorReversion();
+            document.getElementById('reversionModal').classList.add('active');
+            campo.focus();
+        }
+
+        function actualizarContadorReversion() {
+            const n = document.getElementById('reversion-motivo-input').value.length;
+            document.getElementById('reversion-contador').textContent = n + ' / 300';
+        }
+
+        async function confirmarReversion() {
+            const motivo = document.getElementById('reversion-motivo-input').value.replace(/\s+/g, ' ').trim();
+            if (reversionModo !== 'rechazar' && motivo.length < 5) {
+                avisar('Escribí el motivo de la reversión (mínimo 5 letras).', 'error');
+                return;
+            }
+            const m = motosDemo.find(x => x.id === reversionId);
+            const chasis = m ? m.chasis : '';
+            const boton = document.getElementById('reversion-guardar-btn');
+            const textoOriginal = boton.textContent;
+            boton.textContent = 'Guardando...';
+            boton.disabled = true;
+            try {
+                if (reversionModo === 'solicitar') {
+                    await apiPost('solicitarReversionVenta', { id: reversionId, motivo }, { textoBloqueo: 'Enviando solicitud…' });
+                    closeModal('reversionModal');
+                    avisar('Solicitud enviada: la venta del chasis ' + chasis + ' sigue vigente hasta que Administración la apruebe.', 'ok');
+                } else if (reversionModo === 'directa') {
+                    await apiPost('revertirVenta', { id: reversionId, motivo }, { textoBloqueo: 'Revirtiendo venta…' });
+                    closeModal('reversionModal');
+                    avisar('Venta revertida: el chasis ' + chasis + ' volvió a Disponible.', 'ok');
+                } else {
+                    await apiPost('resolverReversionVenta', { id: reversionId, aprobar: false, nota: motivo }, { textoBloqueo: 'Rechazando…' });
+                    closeModal('reversionModal');
+                    avisar('Solicitud rechazada: el chasis ' + chasis + ' sigue vendido.', 'ok');
+                }
+            } catch (err) {
+                avisar('No se pudo completar: ' + err.message, 'error');
+            } finally {
+                boton.textContent = textoOriginal;
+                boton.disabled = false;
+            }
+        }
+
+        async function aprobarReversion(id) {
+            const m = motosDemo.find(x => x.id === id);
+            if (!m || !esAdministracion()) return;
+            const okay = await confirmar('¿Aprobar la reversión?\n\n' + m.marca + ' ' + m.modelo + ' (chasis ' + m.chasis + ') vuelve a Disponible en ' + m.sucursal +
+                ' y se borran la venta a ' + m.cliente + ' (' + formatearFechaCorta(m.fechaVenta) + ').', '✓ Aprobar');
+            if (!okay) return;
+            try {
+                await apiPost('resolverReversionVenta', { id, aprobar: true }, { textoBloqueo: 'Revirtiendo venta…' });
+                avisar('Reversión aprobada: el chasis ' + m.chasis + ' volvió a Disponible en ' + m.sucursal + '.', 'ok');
+            } catch (err) {
+                avisar('No se pudo aprobar: ' + err.message, 'error');
+            }
+        }
+
+        async function cancelarReversion(id) {
+            const m = motosDemo.find(x => x.id === id);
+            if (!m) return;
+            if (!(await confirmar('¿Cancelar la solicitud de reversión del chasis ' + m.chasis + '? La venta sigue vigente.', 'Cancelar solicitud'))) return;
+            try {
+                await apiPost('cancelarReversionVenta', { id }, { textoBloqueo: 'Cancelando…' });
+                avisar('Solicitud cancelada.', 'ok');
+            } catch (err) {
+                avisar('No se pudo cancelar: ' + err.message, 'error');
+            }
+        }
+
         function renderHistorico() {
             const vendidas = motosDemo.filter(m => m.disponibilidad === 'Vendida');
             const retiradas = motosDemo.filter(m => m.disponibilidad === 'Retirada');
@@ -3964,6 +4349,7 @@
             const ordenadasRet = [...retiradas].sort((a, b) => String(b.fechaRetiro || '').localeCompare(String(a.fechaRetiro || '')));
             renderPaginado('historicoRetiradas', 'historico-retiradas-table', ordenadasRet, filaRetiradaHTML, 9, 'Todavía no hay unidades retiradas.');
 
+            renderReversiones();
             document.getElementById('hist-n-vendidas').textContent = '(' + vendidas.length + ')';
             document.getElementById('hist-n-retiradas').textContent = '(' + retiradas.length + ')';
             verHistorico(historicoVista);
@@ -5307,7 +5693,7 @@
                 return;
             }
 
-            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'motor', 'precio', 'sucursal', 'estadoVenta', 'condicion', 'casco'];
+            const obligatorios = ['fecha', 'marca', 'modelo', 'anio', 'color', 'colorPrimario', 'chasis', 'precio', 'sucursal', 'estadoVenta', 'condicion', 'casco'];
             const faltantes = obligatorios.filter(campo => !moto[campo]);
             if (faltantes.length > 0) {
                 avisar('Por favor completa todos los campos obligatorios (*).', 'error');
