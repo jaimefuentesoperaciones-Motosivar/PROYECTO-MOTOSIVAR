@@ -1539,6 +1539,12 @@
             color: var(--ink-muted);
         }
 
+        /* Filtros del Histórico */
+        .filtros-historico { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px 14px; margin: 14px 0 8px; }
+        .filtros-historico .form-group { margin-bottom: 0; }
+        .filtros-historico label { font-size: 12.5px; }
+        .filtros-historico-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 16px; min-height: 36px; }
+        .filtros-historico-pie .btn { padding: 6px 12px; font-size: 12.5px; }
         /* Reversión de ventas */
         .reversiones-panel { margin-bottom: 22px; border: 1px solid #f3c98b; background: #fff8ec; border-radius: 10px; padding: 14px 16px; }
         .reversiones-panel h3 { font-size: 15px; color: #8a4b00; margin-bottom: 2px; }
@@ -2038,9 +2044,39 @@
                                 <h2 style="margin-bottom: 6px;">Unidades vendidas</h2>
                                 <p style="font-size: 13px; color: var(--ink-muted); margin-bottom: 20px;">Registro permanente de motos que ya salieron del inventario. Se conserva la sucursal de origen, el comprador y la fecha de venta.</p>
                             </div>
-                            <button class="btn btn-secondary" onclick="exportarHistorico()">📥 Exportar Histórico</button>
+                            <button class="btn btn-secondary" onclick="exportarHistorico()" title="Exporta lo que se ve con los filtros aplicados">📥 Exportar Histórico</button>
                         </div>
                         <div class="reversiones-panel" id="reversiones-panel" style="display:none;"></div>
+                        <div class="filtros-historico" id="hf-v-barra">
+                            <div class="form-group">
+                                <label for="hf-v-chasis">Chasis</label>
+                                <input type="text" id="hf-v-chasis" placeholder="Escribí para filtrar" autocomplete="off" oninput="aplicarFiltrosHistorico('vendidas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-v-nombre">Nombre del cliente</label>
+                                <input type="text" id="hf-v-nombre" placeholder="Escribí para filtrar" autocomplete="off" oninput="aplicarFiltrosHistorico('vendidas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-v-marca">Marca</label>
+                                <select id="hf-v-marca" onchange="aplicarFiltrosHistorico('vendidas')"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-v-modelo">Modelo</label>
+                                <select id="hf-v-modelo" onchange="aplicarFiltrosHistorico('vendidas')"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-v-desde">Fecha desde</label>
+                                <input type="date" id="hf-v-desde" onchange="aplicarFiltrosHistorico('vendidas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-v-hasta">Fecha hasta</label>
+                                <input type="date" id="hf-v-hasta" onchange="aplicarFiltrosHistorico('vendidas')">
+                            </div>
+                        </div>
+                        <div class="filtros-historico-pie">
+                            <span class="card-ayuda" id="hf-v-conteo"></span>
+                            <button class="btn btn-secondary" type="button" id="hf-v-limpiar" style="display:none;" onclick="limpiarFiltrosHistorico('vendidas')">✕ Limpiar filtros</button>
+                        </div>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -2067,7 +2103,45 @@
                                 <h2 style="margin-bottom: 6px;">Unidades retiradas</h2>
                                 <p style="font-size: 13px; color: var(--ink-muted); margin-bottom: 20px;">Motos que retiró la marca u otro concesionario. Se conserva la sucursal de origen, quién la retiró y la fecha.</p>
                             </div>
-                            <button class="btn btn-secondary" onclick="exportarHistorico()">📥 Exportar Retiradas</button>
+                            <button class="btn btn-secondary" onclick="exportarHistorico()" title="Exporta lo que se ve con los filtros aplicados">📥 Exportar Retiradas</button>
+                        </div>
+                        <div class="filtros-historico" id="hf-r-barra">
+                            <div class="form-group">
+                                <label for="hf-r-chasis">Chasis</label>
+                                <input type="text" id="hf-r-chasis" placeholder="Escribí para filtrar" autocomplete="off" oninput="aplicarFiltrosHistorico('retiradas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-nombre">Nombre de quien retiró</label>
+                                <input type="text" id="hf-r-nombre" placeholder="Escribí para filtrar" autocomplete="off" oninput="aplicarFiltrosHistorico('retiradas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-tipo">Quién retiró</label>
+                                <select id="hf-r-tipo" onchange="aplicarFiltrosHistorico('retiradas')">
+                                    <option value="">Todos</option>
+                                    <option value="Marca">La marca</option>
+                                    <option value="Otro concesionario">Otro concesionario</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-marca">Marca</label>
+                                <select id="hf-r-marca" onchange="aplicarFiltrosHistorico('retiradas')"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-modelo">Modelo</label>
+                                <select id="hf-r-modelo" onchange="aplicarFiltrosHistorico('retiradas')"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-desde">Fecha desde</label>
+                                <input type="date" id="hf-r-desde" onchange="aplicarFiltrosHistorico('retiradas')">
+                            </div>
+                            <div class="form-group">
+                                <label for="hf-r-hasta">Fecha hasta</label>
+                                <input type="date" id="hf-r-hasta" onchange="aplicarFiltrosHistorico('retiradas')">
+                            </div>
+                        </div>
+                        <div class="filtros-historico-pie">
+                            <span class="card-ayuda" id="hf-r-conteo"></span>
+                            <button class="btn btn-secondary" type="button" id="hf-r-limpiar" style="display:none;" onclick="limpiarFiltrosHistorico('retiradas')">✕ Limpiar filtros</button>
                         </div>
                         <div class="table-wrapper">
                             <table>
@@ -4339,16 +4413,110 @@
             }
         }
 
+        // ----- Filtros del Histórico (Vendidas y Retiradas) -----
+        // Chasis y nombre se filtran mientras se escribe; marca y modelo solo
+        // se eligen de la lista (no se puede escribir algo que no exista);
+        // la fecha es un intervalo desde / hasta (se puede dejar uno solo).
+        const HIST = {
+            vendidas:  { p: 'v', clave: 'historico',          tbody: 'historico-table',           campoFecha: 'fechaVenta',  campoNombre: 'cliente',    filaFn: m => filaHistoricoHTML(m), cols: 9, vacio: 'Todavía no hay unidades vendidas.',   plural: 'vendidas' },
+            retiradas: { p: 'r', clave: 'historicoRetiradas', tbody: 'historico-retiradas-table', campoFecha: 'fechaRetiro', campoNombre: 'retiradaPor', filaFn: m => filaRetiradaHTML(m),  cols: 9, vacio: 'Todavía no hay unidades retiradas.', plural: 'retiradas' }
+        };
+        const motosDeHistorico = vista => motosDemo.filter(m => m.disponibilidad === (vista === 'retiradas' ? 'Retirada' : 'Vendida'));
+
+        function valoresFiltroHistorico(vista) {
+            const p = HIST[vista].p;
+            const v = id => { const el = document.getElementById('hf-' + p + '-' + id); return el ? el.value : ''; };
+            let desde = v('desde'), hasta = v('hasta');
+            if (desde && hasta && desde > hasta) { const t = desde; desde = hasta; hasta = t; }  // si van al revés, se acomodan
+            return { chasis: claveTexto(v('chasis')), nombre: claveTexto(v('nombre')), tipo: v('tipo'), marca: v('marca'), modelo: v('modelo'), desde, hasta, invertidas: v('desde') && v('hasta') && v('desde') > v('hasta') };
+        }
+
+        function filtrarHistoricoLista(vista, lista) {
+            const f = valoresFiltroHistorico(vista), c = HIST[vista];
+            return lista.filter(m => {
+                if (f.chasis && !claveTexto(m.chasis).includes(f.chasis)) return false;
+                if (f.nombre && !claveTexto(m[c.campoNombre]).includes(f.nombre)) return false;
+                if (f.tipo && m.tipoRetiro !== f.tipo) return false;
+                if (f.marca && textoClave(m.marca) !== f.marca) return false;
+                if (f.modelo && textoClave(m.modelo) !== f.modelo) return false;
+                const dia = String(m[c.campoFecha] || '').slice(0, 10);
+                if (f.desde && (!dia || dia < f.desde)) return false;
+                if (f.hasta && (!dia || dia > f.hasta)) return false;
+                return true;
+            });
+        }
+
+        function hayFiltrosHistorico(vista) {
+            const f = valoresFiltroHistorico(vista);
+            return !!(f.chasis || f.nombre || f.tipo || f.marca || f.modelo || f.desde || f.hasta);
+        }
+
+        // Rehace las opciones de Marca y Modelo con lo que hay en el histórico.
+        // Marca: todas las que hay. Modelo: los de la marca elegida (o todos).
+        // Conserva lo que ya estaba elegido mientras siga existiendo.
+        function actualizarOpcionesHistorico(vista, lista) {
+            const p = HIST[vista].p;
+            const selMarca = document.getElementById('hf-' + p + '-marca');
+            const selModelo = document.getElementById('hf-' + p + '-modelo');
+            if (!selMarca || !selModelo) return;
+            const contar = (items, campo) => { const o = {}; items.forEach(m => { const k = textoClave(m[campo]); if (k) o[k] = (o[k] || 0) + 1; }); return o; };
+            const marcas = contar(lista, 'marca');
+            let marcaElegida = selMarca.value;
+            if (marcaElegida && !marcas[marcaElegida]) marcaElegida = '';
+            selMarca.innerHTML = '<option value="">Todas</option>' + Object.keys(marcas).sort().map(k => `<option value="${escaparHTML(k)}">${escaparHTML(k)} (${marcas[k]})</option>`).join('');
+            selMarca.value = marcaElegida;
+
+            const modelos = contar(marcaElegida ? lista.filter(m => textoClave(m.marca) === marcaElegida) : lista, 'modelo');
+            let modeloElegido = selModelo.value;
+            if (modeloElegido && !modelos[modeloElegido]) modeloElegido = '';
+            selModelo.innerHTML = '<option value="">Todos</option>' + Object.keys(modelos).sort().map(k => `<option value="${escaparHTML(k)}">${escaparHTML(k)} (${modelos[k]})</option>`).join('');
+            selModelo.value = modeloElegido;
+        }
+
+        function dibujarTablaHistorico(vista) {
+            const c = HIST[vista];
+            const todas = motosDeHistorico(vista);
+            const lista = filtrarHistoricoLista(vista, todas)
+                .sort((a, b) => String(b[c.campoFecha] || '').localeCompare(String(a[c.campoFecha] || '')));   // más recientes primero
+            const filtrando = hayFiltrosHistorico(vista);
+            renderPaginado(c.clave, c.tbody, lista, c.filaFn, c.cols,
+                filtrando ? 'Ninguna unidad ' + (vista === 'vendidas' ? 'vendida' : 'retirada') + ' coincide con los filtros.' : c.vacio);
+            const conteo = document.getElementById('hf-' + c.p + '-conteo');
+            if (conteo) conteo.textContent = todas.length
+                ? (filtrando ? 'Mostrando ' + lista.length + ' de ' + todas.length + ' ' + c.plural : todas.length + ' ' + c.plural + ' en total')
+                : '';
+            const limpiar = document.getElementById('hf-' + c.p + '-limpiar');
+            if (limpiar) limpiar.style.display = filtrando ? 'inline-flex' : 'none';
+            // El selector de fecha no deja elegir un "hasta" anterior al "desde"
+            const d = document.getElementById('hf-' + c.p + '-desde'), h = document.getElementById('hf-' + c.p + '-hasta');
+            if (d && h) { h.min = d.value || ''; d.max = h.value || ''; }
+            return lista;
+        }
+
+        function aplicarFiltrosHistorico(vista) {
+            const c = HIST[vista];
+            actualizarOpcionesHistorico(vista, motosDeHistorico(vista));
+            paginaActual[c.clave] = 1;     // al filtrar se vuelve a la primera página
+            dibujarTablaHistorico(vista);
+        }
+
+        function limpiarFiltrosHistorico(vista) {
+            const p = HIST[vista].p;
+            ['chasis', 'nombre', 'tipo', 'marca', 'modelo', 'desde', 'hasta'].forEach(id => {
+                const el = document.getElementById('hf-' + p + '-' + id);
+                if (el) el.value = '';
+            });
+            aplicarFiltrosHistorico(vista);
+        }
+
         function renderHistorico() {
-            const vendidas = motosDemo.filter(m => m.disponibilidad === 'Vendida');
-            const retiradas = motosDemo.filter(m => m.disponibilidad === 'Retirada');
-
-            // Más recientes primero
-            const ordenadas = [...vendidas].sort((a, b) => String(b.fechaVenta || '').localeCompare(String(a.fechaVenta || '')));
-            renderPaginado('historico', 'historico-table', ordenadas, filaHistoricoHTML, 9, 'Todavía no hay unidades vendidas.');
-            const ordenadasRet = [...retiradas].sort((a, b) => String(b.fechaRetiro || '').localeCompare(String(a.fechaRetiro || '')));
-            renderPaginado('historicoRetiradas', 'historico-retiradas-table', ordenadasRet, filaRetiradaHTML, 9, 'Todavía no hay unidades retiradas.');
-
+            const vendidas = motosDeHistorico('vendidas');
+            const retiradas = motosDeHistorico('retiradas');
+            // Lo que la persona escribió en los filtros se conserva al actualizarse los datos
+            ['vendidas', 'retiradas'].forEach(v => {
+                actualizarOpcionesHistorico(v, motosDeHistorico(v));
+                dibujarTablaHistorico(v);
+            });
             renderReversiones();
             document.getElementById('hist-n-vendidas').textContent = '(' + vendidas.length + ')';
             document.getElementById('hist-n-retiradas').textContent = '(' + retiradas.length + ')';
@@ -5901,9 +6069,9 @@
 
         async function exportarHistorico() {
             if (historicoVista === 'retiradas') {
-                const retiradas = motosDemo.filter(m => m.disponibilidad === 'Retirada');
+                const retiradas = filtrarHistoricoLista('retiradas', motosDeHistorico('retiradas'));
                 if (retiradas.length === 0) {
-                    avisar('Todavía no hay unidades retiradas para exportar.', 'error');
+                    avisar(hayFiltrosHistorico('retiradas') ? 'Ninguna unidad retirada coincide con los filtros: no hay nada que exportar.' : 'Todavía no hay unidades retiradas para exportar.', 'error');
                     return;
                 }
                 try {
@@ -5914,9 +6082,9 @@
                 }
                 return;
             }
-            const vendidas = motosDemo.filter(m => m.disponibilidad === 'Vendida');
+            const vendidas = filtrarHistoricoLista('vendidas', motosDeHistorico('vendidas'));
             if (vendidas.length === 0) {
-                avisar('Todavía no hay unidades vendidas para exportar.', 'error');
+                avisar(hayFiltrosHistorico('vendidas') ? 'Ninguna unidad vendida coincide con los filtros: no hay nada que exportar.' : 'Todavía no hay unidades vendidas para exportar.', 'error');
                 return;
             }
             try {
